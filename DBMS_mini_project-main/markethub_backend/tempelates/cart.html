@@ -1,0 +1,16 @@
+<!-- templates/cart.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cart</title>
+</head>
+<body>
+    <h1>Your Cart</h1>
+    <p>Total: ₹<strong>500</strong></p>
+
+    <form method="POST" action="/checkout">
+        <input type="hidden" name="amount" value="500">
+        <button type="submit">Pay Now</button>
+    </form>
+</body>
+</html>

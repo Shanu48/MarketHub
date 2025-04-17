@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="supplier.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="supplier_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
+            <ul class="nav-links">
+                <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
+                <li><a href="s_profile.html">Profile</a></li>
+                <li><a href="manage.html">Manage orders</a></li>
+                <li><a href="warehouse.html">Warehouse</a></li>
+                <li><a href="transport.html">Transport</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="profile-container">
+        <h2>Profile</h2>
+        <p><strong>Role:</strong> <span id="role"></span></p>
+        <p><strong>User ID:</strong> <span id="userID"></span></p>
+        <p><strong>Name:</strong> <span id="name"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <p><strong>Phone:</strong> <span id="phone"></span></p>
+        <p><strong>Address:</strong> <span id="address"></span></p>
+
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        fetch("http://127.0.0.1:5000/profile")
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById("role").textContent = data.role;
+            document.getElementById("userID").textContent = data.userID;
+            document.getElementById("name").textContent = data.name;
+            document.getElementById("email").textContent = data.email;
+            document.getElementById("phone").textContent = data.phone;
+            document.getElementById("address").textContent = data.address;
+          })
+          .catch(err => {
+            alert("Failed to load profile.");
+            console.error(err);
+          });
+      </script>
+</body>
+</html>

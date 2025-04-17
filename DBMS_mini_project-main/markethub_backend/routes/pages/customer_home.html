@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Home</title>
+    <link rel="stylesheet" href="customer.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <nav>
+            <a href="customer_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
+            <ul class="nav-links">
+                <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="order_details.html">Orders</a></li>
+                <li><a href="returns.html">Returns</a></li>
+            </ul>
+        </nav>
+    </header>
+
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-overlay">
+            <h1>MarketHub</h1>
+            <p><b>Buy fresh & organic wholesale groceries</b></p>
+            <p>Directly from known suppliers at the best prices!!</p>
+            <div class="hero-buttons" style="margin-top: 10px;">
+                <a class="shop-btn" href="#product">Shop Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search and Filter Section -->
+    <section class="search_n_filter">
+        <input type="text" id="search-bar" placeholder="Search Product">
+        
+        <select id="sort-options">
+            <option value="default">Sort By</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="discount">Discount</option>
+        </select>
+
+        <select id="category-filter">
+            <option value="all">All Categories</option>
+            <option value="vegetables">Vegetables</option>
+            <option value="fruits">Fruits</option>
+            <option value="dairy">Dairy Products</option>
+        </select>
+    </section>
+    <div id="product-container"></div>
+
+    <script>
+        async function fetchProducts() {
+            try {
+                const response = await fetch("http://127.0.0.1:5000/products");
+                const products = await response.json();
+    
+                console.log("Fetched Products:", products); // Debug log
+    
+                const container = document.getElementById("product-container");
+                container.innerHTML = "";
+    
+                if (!Array.isArray(products) || products.length === 0) {
+                    console.log("No products received");
+                    container.innerHTML = "<p>No products found</p>";
+                    return;
+                }
+    
+                products.forEach(product => {
+                    console.log("Product:", product); // Debug log for each product
+                    const productDiv = document.createElement("div");
+                    productDiv.classList.add("product-card");
+                    productDiv.innerHTML = `
+                        <h3>${product.pName}</h3>
+                        <p>${product.description}</p>
+                        <p><strong>Price:</strong> ₹${product.price} per ${product.unit}</p>
+                        <p><strong>Category:</strong> ${product.categoryName}</p>
+                    `;
+                    container.appendChild(productDiv);
+                });
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            }
+        }
+    
+        fetchProducts();
+    </script>
+</body>
+</html>

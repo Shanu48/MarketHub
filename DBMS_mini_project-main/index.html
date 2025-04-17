@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MarketHub - Login & Signup</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      width: 320px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    form {
+      display: none;
+      flex-direction: column;
+    }
+
+    form.active {
+      display: flex;
+    }
+
+    input, select, button {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .toggle-link {
+      font-size: 14px;
+      color: #007bff;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .toggle-link:hover {
+      text-decoration: underline;
+    }
+
+    #errorMessage {
+      color: red;
+      text-align: center;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    #successMessage {
+      color: green;
+      text-align: center;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 id="formTitle">Login</h2>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="active">
+      <input type="email" id="loginEmail" placeholder="Email" required />
+      <input type="password" id="loginPassword" placeholder="Password" required />
+      <button type="submit">Login</button>
+      <p id="errorMessage"></p>
+      <p class="toggle-link" onclick="toggleForms('signup')">Don't have an account? Sign up</p>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signupForm">
+      <input type="text" id="name" placeholder="Name" required />
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="text" id="phone" placeholder="Phone Number" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <select id="role" required>
+        <option value="">Select Role</option>
+        <option value="Customer">Customer</option>
+        <option value="Supplier">Supplier</option>
+      </select>
+      <button type="submit">Signup</button>
+      <p id="errorMessage"></p>
+      <p id="successMessage"></p>
+      <p class="toggle-link" onclick="toggleForms('login')">Already have an account? Login</p>
+    </form>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+    const formTitle = document.getElementById("formTitle");
+    const errorMessage = document.getElementById("errorMessage");
+    const successMessage = document.getElementById("successMessage");
+
+    function toggleForms(mode) {
+      if (mode === 'signup') {
+        loginForm.classList.remove("active");
+        signupForm.classList.add("active");
+        formTitle.textContent = "Signup";
+        errorMessage.textContent = "";
+        successMessage.textContent = "";
+      } else {
+        signupForm.classList.remove("active");
+        loginForm.classList.add("active");
+        formTitle.textContent = "Login";
+        errorMessage.textContent = "";
+        successMessage.textContent = "";
+      }
+    }
+
+    // Login Form Submit
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMessage.textContent = "";
+
+      const data = {
+        email: document.getElementById("loginEmail").value,
+        password: document.getElementById("loginPassword").value,
+      };
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          if (result.role === "S") {
+            window.location.href = "pages/supplier_home.html";
+          } else if (result.role === "C") {
+            window.location.href = "pages/customer_home.html";
+          } else {
+            errorMessage.textContent = "Unknown user role.";
+          }
+        } else {
+          errorMessage.textContent = result.message || "Login failed! Please check credentials or sign up.";
+        }
+      } catch (error) {
+        errorMessage.textContent = "Error connecting to server.";
+      }
+    });
+
+    // Signup Form Submit
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMessage.textContent = "";
+      successMessage.textContent = "";
+
+      const data = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        password: document.getElementById("password").value,
+        role: document.getElementById("role").value,
+      };
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          successMessage.textContent = `Signup successful! Your User ID is ${result.userID}`;
+          setTimeout(() => {
+            toggleForms('login');
+          }, 1500);
+        } else {
+          errorMessage.textContent = result.message || "Signup failed!";
+        }
+      } catch (error) {
+        errorMessage.textContent = "Error connecting to server.";
+      }
+    });
+  </script>
+</body>
+</html>

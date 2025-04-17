@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transport Management</title>
+    <link rel="stylesheet" href="supplier.css">
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="supplier_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
+            <ul class="nav-links">
+                <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
+                <li><a href="s_profile.html">Profile</a></li>
+                <li><a href="manage.html">Manage orders</a></li>
+                <li><a href="warehouse.html">Warehouse</a></li>
+                <li><a href="transport.html">Transport</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Transport Management</h2>
+        <form id="transport-form">
+            <label for="vehicle-number">Vehicle Number:</label>
+            <input type="text" id="vehicle-number" required>
+
+            <label for="driver-name">Driver Name:</label>
+            <input type="text" id="driver-name" required>
+
+            <label for="assigned-order">Assigned Order ID:</label>
+            <input type="text" id="assigned-order" required>
+
+            <button type="submit">Assign Transport</button>
+        </form>
+
+        <h3>Transport List</h3>
+        <div id="transport-list"></div>
+    </main>
+
+    <script src="transport.js"></script>
+</body>
+</html>

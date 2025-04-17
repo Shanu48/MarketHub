@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <link rel="stylesheet" href="customer.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="customer_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
+            <ul class="nav-links">
+                <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="cart.html">Cart</a></li>
+                <li><a href="order_details.html">Orders</a></li>
+                <li><a href="returns.html">Returns</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="cart-container">
+        <h2>Your Cart</h2>
+        <div class="cart-items"></div>
+        <div class="cart-summary">
+            <p class="cart-total"><strong>Total:</strong> Rs. <span id="total-price">0.00</span></p>
+            <button id="checkout-btn">Proceed to Checkout</button>
+        </div>
+    </section>
+    
+    <h1>Your Cart</h1>
+    <p>Total: ₹<strong>500</strong></p>
+    <form method="POST" action="/checkout">
+        <input type="hidden" name="amount" value="500">
+        <button type="submit">Pay Now</button>
+    </form>
+
+    <script src="cart.js"></script>
+</body>
+</html>
