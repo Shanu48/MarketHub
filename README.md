@@ -1,54 +1,48 @@
-To Do: 
+# 🚀 MarketHub2
 
--fix the styling of those which work.
--move the logout button to the right. remove the additional highlight it has. make it smaller
--when clicked on the logo, open profile page.
--insted of the profile button, have a dashboard/home button
--cant see the logo on other pages
+MarketHub2 is an all-in-one marketplace web application that connects **Suppliers** and **Customers** through a seamless platform — powered by warehouses, real-time orders, and smart inventory tracking.
 
-customer dashboard:
--enable search sort filter products.
--enable the add to cart option for the products
--also display supplied by
+Whether you're buying, selling, or managing products, MarketHub2 brings everything together in one smooth experience.
 
+---
 
-WE SHOULD ADD EXPIRY DATE FOR EACH PRODUCT. IF TOADY IS 3 DAYS BEFORE EXPIRY DATE THEN DELETE THE PRODUCT AND INFORM THE SUPPLIER ON THE DASHBOARD
+## 🌟 Features
 
-IF WE R SHOWING LIKE SUPPLIER SEND TO WEARHOUSE N THEN WEARHOUSE HANDLES THE SELL TO CUSTOMER THEN MA'AM MIGHT EXPECT A SEPERATE INTERFACE FOR WEARHOUSE MANAGER OR SOMETHING
-SOLUTION: SHOW IT LIKE SUPPLIER IS DIRECTLY SENDING STUFF. JUST THAT, ITS STORED IN WEARHOUSES PROVIDEED BY US
+### 👩‍💼 Customer Portal
+- 🔍 Search, filter, and sort products
+- 🛒 Add products to cart and checkout easily
+- 📦 Track all your orders with real-time shipping updates
 
-warehouse:
--make the warehouse page
--a table displaying all the products supplier has in various wearhouses
+### 🧑‍🌾 Supplier Dashboard
+- ➕ Add and manage products in warehouses
+- 📊 View total products supplied, sold, and expired
+- 🚚 Track goods in transit to warehouses
 
-cart:
--display the added products in cart
--have the option of changing the quantity in the cart
--when i click on proceed to checkout
--when u click on check-out open payment success page.
+### 🏢 Warehouse System
+- 📋 View stock across multiple warehouses
+- 🗂️ Manage inventory efficiently
 
-payment-success:
--display the final amount of the order, ask for details like name, address, payment method
--show a payment complete page
+### 🔐 Account & Session Features
+- ✅ Role-based access: Customer or Supplier
+- 🧭 Simple navigation with logo and dashboard buttons
+- 🔒 Secure login and logout functionality
 
-orders:
--display all the orders ever placed by that customer with order id, final amount n a button to track it
--when click on the track button, display the link to the shipping website, with the shipping id, and status(processing, shipped, delivered)
+---
 
-supplier dashboard:
--enable supplier to add products to the wearhouse
-    -supplier adds details like product name, image, price, discount, expiry date, wearhouse its stored in
--show how many total items supplier has sent to wearhouses
--show how many have been sent the customers
--show many expired/wasted
+## 💡 Upcoming Features
 
-supplier transport:
--enable supplier to see if the goods sent have reached the wearhouse
+- ⚠️ Auto-delete products close to expiry and notify suppliers
+- 💳 Enhanced checkout flow with payment confirmation page
+- 📦 Separate tracking for multi-supplier orders
+- 🧾 Order history with itemized bills and supplier info
 
-wearhouse:
--a table displaying product with its available quantity in each wearhouse that this supplier has sent
+---
 
-manage orders:
-- once order is placed on the customer side, show it in manage orders if it belongs to this supplier
-- supplier confirms the order
-- one order can consist of multiple items from multiple suppliers n weaarhouses. once all of them confirm it, start transport and update the quantities and in the transport tab of customer show 'shipped'
+## 📁 Tech Stack
+
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Python (Flask)
+- **Database**: MySQL / SQLite
+- **Tools**: VS Code, GitHub, Git
+
+---
