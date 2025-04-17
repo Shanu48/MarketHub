@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# 🚀 MarketHub2
+# 🚀 MarketHub
 
 MarketHub2 is an all-in-one marketplace web application that connects **Suppliers** and **Customers** through a seamless platform — powered by warehouses, real-time orders, and smart inventory tracking.
 
