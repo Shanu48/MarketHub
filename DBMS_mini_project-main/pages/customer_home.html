@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Customer Home</title>
   <link rel="stylesheet" href="customer.css" />
 </head>
+
 <body>
   <!-- Header Section -->
   <header>
@@ -14,7 +16,9 @@
         <img src="images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;" />
       </a>
       <ul class="nav-links">
-        <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
+        <li>
+          <a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a>
+        </li>
         <li><a href="profile.html">Profile</a></li>
         <li><a href="cart.html">Cart</a></li>
         <li><a href="order_details.html">Orders</a></li>
@@ -38,7 +42,7 @@
   <!-- Search and Filter Section -->
   <section class="search_n_filter">
     <input type="text" id="search-bar" placeholder="Search Product" />
-    
+
     <select id="sort-options">
       <option value="">Sort By</option>
       <option value="price-low">Price: Low to High</option>
@@ -57,9 +61,11 @@
     <select id="filter-options" style="display: none;"></select>
   </section>
 
+  <!-- Product Container -->
   <div id="product-container" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;"></div>
 
   <script>
+    
     let allProducts = [];
 
     function formatImageName(pName) {
@@ -94,14 +100,17 @@
         const imagePath = `images/${imageName}`;
 
         productDiv.innerHTML = `
-          <img src="${imagePath}" alt="${product.pName}" class="product-image"
-            style="width: 200px; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
+          <img src="${imagePath}" alt="${product.pName}" class="product-image" style="width: 200px; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
           <h3>${product.pName}</h3>
           <p>${product.description}</p>
           <p><strong>Price:</strong> ₹${product.price} per ${product.unit}</p>
           <p><strong>Category:</strong> ${product.categoryName}</p>
           <p><strong>Supplier:</strong> ${product.sName}</p>
+          <div class="cart-actions" data-productid="${product.productID}">
+            <button class="add-cart-btn">Add to Cart</button>
+          </div>
         `;
+        
         container.appendChild(productDiv);
       });
     }
@@ -161,11 +170,69 @@
       filterOptions.style.display = "inline-block";
     }
 
+    function addToCart(productID) {
+      const userID = getUserID();
+      fetch("http://127.0.0.1:5000/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productID, userID, quantity: 1 })
+      })
+      .then(res => res.json())
+      .then(() => {
+        renderQtyControls(productID, 1);
+      });
+    }
+    
+    function renderQtyControls(productID, quantity) {
+    const container = document.getElementById(`cart-${productID}`);
+    container.innerHTML = `
+      <div class="quantity-controls">
+        <button onclick="updateCart(${productID}, -1)">-</button>
+        <span id="qty-${productID}">${quantity}</span>
+        <button onclick="updateCart(${productID}, 1)">+</button>
+      </div>
+    `;
+  }
+
+
+    function updateCart(productID, change) {
+      const userID = getUserID();
+      const qtySpan = document.getElementById(`qty-${productID}`);
+      let quantity = parseInt(qtySpan.innerText) + change;
+
+      if (quantity <= 0) {
+        fetch("http://127.0.0.1:5000/cart/remove", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productID, userID })
+        })
+        .then(res => res.json())
+        .then(() => {
+          document.getElementById(`cart-${productID}`).innerHTML = `
+            <button class="add-cart-btn" onclick="addToCart(${productID})">Add to Cart</button>
+          `;
+        });
+      } else {
+        fetch("http://127.0.0.1:5000/cart/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productID, userID, quantity })
+        })
+        .then(res => res.json())
+        .then(() => {
+          qtySpan.innerText = quantity;
+        });
+      }
+    }
+
+    function getUserID() {
+      return localStorage.getItem("userID");
+    }
+
     // Event Listeners
     document.getElementById("search-bar").addEventListener("input", applyFilters);
     document.getElementById("sort-options").addEventListener("change", applyFilters);
     document.getElementById("filter-options").addEventListener("change", applyFilters);
-
     document.getElementById("filter-type").addEventListener("change", () => {
       populateFilterOptions();
       applyFilters();
@@ -174,4 +241,5 @@
     fetchProducts();
   </script>
 </body>
+
 </html>
