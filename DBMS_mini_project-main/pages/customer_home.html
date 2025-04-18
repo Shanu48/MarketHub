@@ -40,23 +40,28 @@
     <input type="text" id="search-bar" placeholder="Search Product" />
     
     <select id="sort-options">
-      <option value="default">Sort By</option>
+      <option value="">Sort By</option>
       <option value="price-low">Price: Low to High</option>
       <option value="price-high">Price: High to Low</option>
       <option value="discount">Discount</option>
     </select>
 
-    <select id="category-filter">
-      <option value="all">All Categories</option>
-      <option value="vegetables">Vegetables</option>
-      <option value="fruits">Fruits</option>
-      <option value="dairy">Dairy Products</option>
+    <!-- Filter Type -->
+    <select id="filter-type">
+      <option value="">Filter by</option>
+      <option value="category">Category</option>
+      <option value="supplier">Supplier</option>
     </select>
+
+    <!-- Dynamic Options -->
+    <select id="filter-options" style="display: none;"></select>
   </section>
 
   <div id="product-container" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;"></div>
 
   <script>
+    let allProducts = [];
+
     function formatImageName(pName) {
       return pName.toLowerCase().replace(/\s+/g, "") + ".png";
     }
@@ -64,37 +69,107 @@
     async function fetchProducts() {
       try {
         const response = await fetch("http://127.0.0.1:5000/products");
-        const products = await response.json();
-
-        const container = document.getElementById("product-container");
-        container.innerHTML = "";
-
-        if (!Array.isArray(products) || products.length === 0) {
-          container.innerHTML = "<p>No products found</p>";
-          return;
-        }
-
-        products.forEach(product => {
-          const productDiv = document.createElement("div");
-          productDiv.classList.add("product-card");
-
-          const imageName = formatImageName(product.pName);
-          const imagePath = `images/${imageName}`;
-
-          productDiv.innerHTML = `
-            <img src="${imagePath}" alt="${product.pName}" class="product-image"
-              style="width: 200px; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
-            <h3>${product.pName}</h3>
-            <p>${product.description}</p>
-            <p><strong>Price:</strong> ₹${product.price} per ${product.unit}</p>
-            <p><strong>Category:</strong> ${product.categoryName}</p>
-          `;
-          container.appendChild(productDiv);
-        });
+        allProducts = await response.json();
+        displayProducts(allProducts);
+        populateFilterOptions(); // Populate filters after loading products
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     }
+
+    function displayProducts(products) {
+      const container = document.getElementById("product-container");
+      container.innerHTML = "";
+
+      if (!Array.isArray(products) || products.length === 0) {
+        container.innerHTML = "<p>No products found</p>";
+        return;
+      }
+
+      products.forEach(product => {
+        const productDiv = document.createElement("div");
+        productDiv.classList.add("product-card");
+
+        const imageName = formatImageName(product.pName);
+        const imagePath = `images/${imageName}`;
+
+        productDiv.innerHTML = `
+          <img src="${imagePath}" alt="${product.pName}" class="product-image"
+            style="width: 200px; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
+          <h3>${product.pName}</h3>
+          <p>${product.description}</p>
+          <p><strong>Price:</strong> ₹${product.price} per ${product.unit}</p>
+          <p><strong>Category:</strong> ${product.categoryName}</p>
+          <p><strong>Supplier:</strong> ${product.sName}</p>
+        `;
+        container.appendChild(productDiv);
+      });
+    }
+
+    function applyFilters() {
+      let filtered = [...allProducts];
+
+      const searchText = document.getElementById("search-bar").value.toLowerCase();
+      const sort = document.getElementById("sort-options").value;
+      const filterType = document.getElementById("filter-type").value;
+      const filterValue = document.getElementById("filter-options").value;
+
+      if (searchText) {
+        filtered = filtered.filter(p => p.pName.toLowerCase().includes(searchText));
+      }
+
+      if (filterType && filterValue) {
+        if (filterType === "category") {
+          filtered = filtered.filter(p => p.categoryName === filterValue);
+        } else if (filterType === "supplier") {
+          filtered = filtered.filter(p => p.sName === filterValue);
+        }
+      }
+
+      if (sort === "price-low") {
+        filtered.sort((a, b) => a.price - b.price);
+      } else if (sort === "price-high") {
+        filtered.sort((a, b) => b.price - a.price);
+      }
+
+      displayProducts(filtered);
+    }
+
+    function populateFilterOptions() {
+      const filterType = document.getElementById("filter-type").value;
+      const filterOptions = document.getElementById("filter-options");
+
+      if (!filterType) {
+        filterOptions.style.display = "none";
+        return;
+      }
+
+      const uniqueValues = new Set();
+      allProducts.forEach(p => {
+        if (filterType === "category") uniqueValues.add(p.categoryName);
+        else if (filterType === "supplier") uniqueValues.add(p.sName);
+      });
+
+      filterOptions.innerHTML = `<option value="">Select</option>`;
+      uniqueValues.forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        filterOptions.appendChild(option);
+      });
+
+      filterOptions.style.display = "inline-block";
+    }
+
+    // Event Listeners
+    document.getElementById("search-bar").addEventListener("input", applyFilters);
+    document.getElementById("sort-options").addEventListener("change", applyFilters);
+    document.getElementById("filter-options").addEventListener("change", applyFilters);
+
+    document.getElementById("filter-type").addEventListener("change", () => {
+      populateFilterOptions();
+      applyFilters();
+    });
 
     fetchProducts();
   </script>

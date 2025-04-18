@@ -20,10 +20,12 @@ def get_products():
     cursor = conn.cursor(dictionary=True)
 
     query = """
-    SELECT p.productID, p.pName, p.description, p.price, p.unit, c.categoryName
-    FROM Product p
-    JOIN Category c ON p.categoryName = c.categoryName;
-"""
+        SELECT p.productID, p.pName, p.description, p.price, p.unit, c.categoryName, s.sName
+        FROM Product p
+        JOIN Category c ON p.categoryName = c.categoryName
+        JOIN Supplier s ON p.userID = s.userID;
+        """
+
 
 
     cursor.execute(query)
@@ -39,3 +41,25 @@ def get_products():
     conn.close()
 
     return jsonify(products)
+
+# Route to get all categories
+@product_blueprint.route("/categories", methods=["GET"])
+def get_categories():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT categoryName FROM Category")
+    categories = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(categories)
+
+# Route to get all suppliers
+@product_blueprint.route("/suppliers", methods=["GET"])
+def get_suppliers():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT sName FROM Supplier")
+    suppliers = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return jsonify(suppliers)
