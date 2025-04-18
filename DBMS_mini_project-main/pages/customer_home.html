@@ -106,14 +106,16 @@
           <p><strong>Price:</strong> ₹${product.price} per ${product.unit}</p>
           <p><strong>Category:</strong> ${product.categoryName}</p>
           <p><strong>Supplier:</strong> ${product.sName}</p>
-          <div class="cart-actions" data-productid="${product.productID}">
-            <button class="add-cart-btn">Add to Cart</button>
+          <div class="cart-actions" id="cart-${product.productID}">
+          <button class="add-cart-btn" onclick="addToCart(${product.productID})">Add to Cart</button>
           </div>
+
         `;
-        
+
         container.appendChild(productDiv);
       });
     }
+
 
     function applyFilters() {
       let filtered = [...allProducts];
