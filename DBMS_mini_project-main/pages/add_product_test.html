@@ -3,41 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <title>Add Product</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f2f2f2;
+            padding: 40px;
+            margin: 0;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #444;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        #response, #productList {
+            max-width: 700px;
+            margin: 20px auto;
+            background: #eee;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
 </head>
 <body>
     <h1>Add Product</h1>
 
     <form id="productForm">
         <label for="pName">Product Name:</label>
-        <input type="text" id="pName" name="pName" required><br><br>
+        <input type="text" id="pName" name="pName" required>
 
         <label for="description">Description:</label>
-        <input type="text" id="description" name="description" required><br><br>
+        <input type="text" id="description" name="description" required>
 
         <label for="price">Price:</label>
-        <input type="number" id="price" name="price" required><br><br>
+        <input type="number" id="price" name="price" required>
 
         <label for="unit">Unit:</label>
-        <input type="text" id="unit" name="unit" required><br><br>
+        <input type="text" id="unit" name="unit" required>
 
         <label for="categoryName">Category:</label>
         <select id="categoryName" name="categoryName" required>
             <option value="">Select a category</option>
-        </select><br><br>
+        </select>
 
         <label for="expiryDate">Expiry Date:</label>
-        <input type="date" id="expiryDate" name="expiryDate"><br><br>
-        
+        <input type="date" id="expiryDate" name="expiryDate">
 
-        <button type="submit">Add Product</button>
+        <label for="warehouseID">Warehouse ID:</label>
+        <select id="warehouseID" name="warehouseID" required>
+            <option value="">Select a warehouse</option>
+        </select>
+
+        <label for="quantity">Quantity Supplied:</label>
+        <input type="number" id="quantity" name="quantity" required>
+
+        <button type="submit">Add Product & Supply</button>
     </form>
 
-    <h2>Response:</h2>
-    <pre id="response"></pre>
+    <h2>Your Products</h2>
+    <div id="productList">Loading products...</div>
 
     <script>
-        // Populate category dropdown on page load
-        window.addEventListener("DOMContentLoaded", async function () {
+        async function fetchCategories() {
             try {
                 const response = await fetch("http://localhost:5000/get_categories");
                 const categories = await response.json();
@@ -50,11 +136,62 @@
                     categorySelect.appendChild(option);
                 });
             } catch (error) {
-                console.error("Error fetching categories:", error);
+                document.getElementById("response").textContent = `Error loading categories: ${error}`;
             }
+        }
+
+        async function fetchWarehouses() {
+            try {
+                const response = await fetch("http://localhost:5000/get_warehouses");
+                const warehouses = await response.json();
+                const warehouseSelect = document.getElementById("warehouseID");
+
+                warehouses.forEach(w => {
+                    const option = document.createElement("option");
+                    option.value = w.warehouseID;
+                    option.textContent = `${w.warehouseID} - ${w.location}`;
+                    warehouseSelect.appendChild(option);
+                });
+            } catch (error) {
+                document.getElementById("response").textContent = `Error loading warehouses: ${error}`;
+            }
+        }
+
+        async function fetchSupplierProducts() {
+            try {
+                const response = await fetch("http://localhost:5000/get_supplier_products");
+                const products = await response.json();
+
+                const container = document.getElementById("productList");
+                if (products.length === 0) {
+                    container.textContent = "No products added yet.";
+                    return;
+                }
+
+                let html = "<table><thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Unit</th><th>Category</th><th>Expiry Date</th></tr></thead><tbody>";
+                products.forEach(p => {
+                    html += `<tr>
+                        <td>${p.productID}</td>
+                        <td>${p.pName}</td>
+                        <td>${p.price}</td>
+                        <td>${p.unit}</td>
+                        <td>${p.categoryName}</td>
+                        <td>${p.expiryDate ? p.expiryDate : '-'}</td>
+                    </tr>`;
+                });
+                html += "</tbody></table>";
+                container.innerHTML = html;
+            } catch (error) {
+                document.getElementById("productList").textContent = `Error loading products: ${error}`;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchCategories();
+            fetchWarehouses();
+            fetchSupplierProducts();
         });
 
-        // Handle form submit
         document.getElementById("productForm").addEventListener("submit", async function (event) {
             event.preventDefault();
 
@@ -64,7 +201,9 @@
                 price: document.getElementById("price").value,
                 unit: document.getElementById("unit").value,
                 categoryName: document.getElementById("categoryName").value,
-                expiryDate: document.getElementById("expiryDate").value
+                expiryDate: document.getElementById("expiryDate").value,
+                warehouseID: document.getElementById("warehouseID").value,
+                quantity: document.getElementById("quantity").value
             };
 
             try {
@@ -76,8 +215,10 @@
 
                 const result = await response.json();
                 document.getElementById("response").textContent = JSON.stringify(result, null, 2);
+                fetchSupplierProducts();
+                document.getElementById("productForm").reset();
             } catch (error) {
-                document.getElementById("response").textContent = `Error: ${error}`;
+                document.getElementById("response").textContent = `Error: ${error.message}`;
             }
         });
     </script>

@@ -33,67 +33,73 @@ def generate_new_product_id(cursor):
     return new_id
 
 # Add new product
+# Add product and optionally to storage
 @supplier_bp.route('/add_product', methods=['POST'])
 def add_product():
-    conn = None
-    cursor = None
+    conn = get_db_connection()
+    cursor = conn.cursor()
     try:
         data = request.json
-        if not data:
-            return jsonify({"error": "No data provided"}), 400
-
-        pName = data.get("pName")
-        description = data.get("description")
-        price = data.get("price")
-        unit = data.get("unit")
-        categoryName = data.get("categoryName")
-        expiryDate = data.get("expiryDate")
-
-        if not all([pName, description, price, unit, categoryName]):
-            return jsonify({"error": "Missing required fields"}), 400
-
         userID = get_logged_in_user()
-        if not userID:
-            return jsonify({"error": "User not logged in"}), 401
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        productID = generate_new_product_id(cursor)
-
-        insert_query = """
+        pID = generate_new_product_id(cursor)
+        cursor.execute("""
             INSERT INTO Product (productID, pName, description, price, unit, categoryName, userID, expiryDate)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_query, (productID, pName, description, price, unit, categoryName, userID, expiryDate))
+        """, (pID, data["pName"], data["description"], data["price"], data["unit"],
+              data["categoryName"], userID, data["expiryDate"] or None))
 
-        storage_query = """
-            INSERT INTO Storage (warehouseID, productID, productQuantity)
-            VALUES (%s, %s, %s)
-        """
-        cursor.execute(storage_query, ('W001', productID, 0))
+        # Optional quantity + warehouse
+        if data.get("warehouseID") and data.get("productQuantity"):
+            cursor.execute("""
+                INSERT INTO Storage (warehouseID, productID, productQuantity)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE productQuantity = productQuantity + VALUES(productQuantity)
+            """, (data["warehouseID"], pID, data["productQuantity"]))
 
         conn.commit()
-
-        cursor.execute("SELECT * FROM Product WHERE userID = %s", (userID,))
-        products = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
-        result = [dict(zip(columns, row)) for row in products]
-
-        return jsonify({
-            "message": "Product added successfully!",
-            "productID": productID,
-            "products": result
-        }), 201
-
-    except mysql.connector.Error as db_error:
-        return jsonify({"error": f"Database error: {str(db_error)}"}), 500
+        return jsonify({"message": "Product added successfully", "productID": pID})
     except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
     finally:
-        if cursor: cursor.close()
-        if conn: conn.close()
+        cursor.close()
+        conn.close()
 
+# Get supplier products
+@supplier_bp.route('/get_supplier_products', methods=['GET'])
+def get_supplier_products():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        userID = get_logged_in_user()
+        cursor.execute("""
+            SELECT p.productID, p.pName, p.description, p.price, p.unit,
+                   p.categoryName, p.expiryDate, s.warehouseID, s.productQuantity
+            FROM Product p
+            LEFT JOIN Storage s ON p.productID = s.productID
+            WHERE p.userID = %s
+        """, (userID,))
+        products = cursor.fetchall()
+        return jsonify(products)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Get all warehouses
+@supplier_bp.route('/get_warehouses', methods=['GET'])
+def get_warehouses():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT warehouseID, location FROM Warehouse")
+        warehouses = cursor.fetchall()
+        return jsonify([{"warehouseID": wid, "location": loc} for wid, loc in warehouses])
+    finally:
+        cursor.close()
+        conn.close()
+        
 # View all products by this supplier
 @supplier_bp.route('/my_products', methods=['GET'])
 def my_products():
