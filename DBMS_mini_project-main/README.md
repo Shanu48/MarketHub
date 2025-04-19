@@ -16,15 +16,12 @@ This document outlines the pending tasks and features for the MarketHub2 applica
 
 ## 🧑‍💼 Customer Dashboard
 
-- [ ] Enable **search**, **sort**, and **filter** for products.
 - [ ] Enable the **"Add to Cart"** option for products.
-- [ ] Display **"Supplied By"** information for each product.
 
 ---
 
 ## 🕒 Product Expiry Feature (Important)
 
-- [ ] Each product should have an **expiry date**.
 - [ ] If **today is 3 days before expiry**, the product should be:
   - [ ] **Deleted**
   - [ ] **Supplier notified** on their dashboard
