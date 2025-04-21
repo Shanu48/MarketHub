@@ -173,3 +173,61 @@ th {
     display: flex;
     justify-content: space-around;
 }
+
+.tab{
+    color: white;
+    background-color: rgb(5, 158, 140);
+    width: 20vw;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    padding-top: 20vh;
+    position: fixed;
+    display: block;
+    overflow: hidden;
+    justify-content: center;
+}
+
+.tab button {
+    background-color: rgb(5, 158, 140);
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    width: 20vw;
+}
+
+.tablinks{
+    border-radius: inherit;
+}
+
+.tab button:hover {
+    background-color: rgb(4, 116, 102);
+}
+
+.tab button.active {
+    background-color: rgb(4, 116, 102);
+    color: rgb(255, 181, 90);
+}
+
+.tabcontent {
+    display: none;
+    margin-left: 35vw;
+    padding: 5vh;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.tabcontent form{
+    border: none;
+}
+
+.tabcontent button{
+    background-color: rgb(255, 181, 90);
+}
+
+#Tab2{
+    margin-left: 22vw;
+}
