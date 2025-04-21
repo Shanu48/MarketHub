@@ -4,175 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supplier Dashboard</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background: #f2f2f2;
-        }
-
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            padding: 10px 30px;
-            position: fixed;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        nav img {
-            border-radius: 50%;
-            height: 50px;
-        }
-
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 20px;
-        }
-
-        .nav-links li a {
-            text-decoration: none;
-            color: #333;
-            padding: 6px 12px;
-        }
-
-        .nav-links li a:hover {
-            background-color: #ddd;
-            border-radius: 5px;
-        }
-
-        .nav-links li a.logout {
-            background-color: rgb(255, 140, 0);
-            color: white;
-            box-shadow: 0 0 5px rgb(0, 133, 62);
-        }
-
-        main {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            padding: 100px 30px 30px;
-        }
-
-        .left-panel {
-            width: 45%;
-        }
-
-        .right-panel {
-            width: 50%;
-        }
-
-        h1, h2, h3 {
-            color: #333;
-            text-align: center;
-        }
-
-        form {
-            background: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #444;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        button {
-            background: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        button:hover {
-            background: #45a049;
-        }
-
-        .dashboard {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            flex: 1;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        }
-
-        #productList {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ccc;
-        }
-
-        th {
-            background-color: #f4f4f4;
-        }
-
-        @media (max-width: 900px) {
-            main {
-                flex-direction: column;
-            }
-
-            .left-panel, .right-panel {
-                width: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="supplier.css">
 </head>
 <body>
     <header>
         <nav>
             <a href="supplier_home.html"><img src="images/logo.png" alt="MarketHub"></a>
             <ul class="nav-links">
-                <li><a href="../index.html" class="logout">Logout</a></li>
                 <li><a href="s_profile.html">Profile</a></li>
-                <li><a href="manage.html">Manage orders</a></li>
+                <li><a href="manage.html">Order Details</a></li>
                 <li><a href="warehouse.html">Warehouse</a></li>
-                <li><a href="transport.html">Transport</a></li>
+                <li><a href="complains.html">Manage Complains</a></li>
+                <li><a href="../index.html" class="logout">Logout</a></li>
             </ul>
         </nav>
     </header>
