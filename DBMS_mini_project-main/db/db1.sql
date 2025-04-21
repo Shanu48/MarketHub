@@ -53,6 +53,8 @@ CREATE TABLE Product (
     FOREIGN KEY (userID) REFERENCES Supplier(userID)
 );
 
+-- expiry date has been added too to the products table
+
 CREATE TABLE Orders (
     orderID VARCHAR(10) PRIMARY KEY,
     date DATE NOT NULL,

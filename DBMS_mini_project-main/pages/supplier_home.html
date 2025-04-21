@@ -269,29 +269,58 @@
             try {
                 const response = await fetch("http://localhost:5000/get_supplier_products");
                 const products = await response.json();
+                console.log("API Response:", products); // Debug log
 
                 const container = document.getElementById("productList");
-                if (products.length === 0) {
+
+                if (!products || products.length === 0) {
                     container.textContent = "No products added yet.";
                     return;
                 }
 
-                let html = "<table><thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Unit</th><th>Category</th><th>Expiry Date</th></tr></thead><tbody>";
-                products.forEach(p => {
-                    html += `<tr>
-                        <td>${p.productID}</td>
-                        <td>${p.pName}</td>
-                        <td>${p.price}</td>
-                        <td>${p.unit}</td>
-                        <td>${p.categoryName}</td>
-                        <td>${p.expiryDate ? new Date(p.expiryDate).toISOString().split('T')[0] : '-'}</td>
-                    </tr>`;
-                });
-                html += "</tbody></table>";
-                container.innerHTML = html;
+                let html = `
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Unit</th>
+                    <th>Category</th>
+                    <th>Warehouses</th>
+                    <th>Stock</th>
+                    <th>Discount</th>
+                    <th>Expiry</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+                products.forEach(product => {
+            // Debug each product
+            console.log("Processing product:", product);
+            
+            html += `
+            <tr>
+                <td>${product.productID || '-'}</td>
+                <td>${product.pName || '-'}</td>
+                <td>${product.price ? '₹' + product.price : '0'}</td>
+                <td>${product.unit || '-'}</td>
+                <td>${product.categoryName || '-'}</td>
+                <td>${product.warehouseLocations || 'Not in warehouse'}</td>
+                <td>${product.totalQuantity !== undefined ? product.totalQuantity : '0'}</td>
+                <td>${product.discountPercentage ? product.discountPercentage + '%' : 'None'}</td>
+                <td>${product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : '-'}</td>
+            </tr>`;
+        });
+
+html += "</tbody></table>";
+container.innerHTML = html;
             } catch (error) {
-                document.getElementById("productList").textContent = `Error loading products: ${error}`;
-            }
+        console.error("Error loading products:", error);
+        document.getElementById("productList").innerHTML = `
+            <p class="error">Error loading products: ${error.message}</p>
+            <p>Check console for details</p>`;
+    }
         }
 
         document.addEventListener("DOMContentLoaded", () => {
