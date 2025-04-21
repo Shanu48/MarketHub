@@ -8,8 +8,8 @@ product_blueprint = Blueprint("product", __name__)
 def get_db_connection():
     return mysql.connector.connect(
         host="localhost",
-        user="Shanu48",
-        password="Shanu@123",
+        user="Aditi",
+        password="Aditi@0830",
         database="MarketHub"
     )
 
