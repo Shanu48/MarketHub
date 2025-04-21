@@ -5,13 +5,13 @@ import mysql.connector
 product_blueprint = Blueprint("product", __name__)
 
 # Database connection function
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="Aditi",
-        password="Aditi@0830",
-        database="MarketHub"
-    )
+# from:
+# def get_db_connection():
+#     return mysql.connector.connect(...
+
+# to:
+from db import get_db_connection
+
 
 # Route to fetch all products
 @product_blueprint.route("/products", methods=["GET"])
