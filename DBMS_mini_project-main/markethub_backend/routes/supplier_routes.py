@@ -5,14 +5,7 @@ from datetime import datetime
 
 supplier_bp = Blueprint('supplier', __name__)
 
-# Database connection
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="Aditi",
-        password="Aditi@0830",
-        database="MarketHub"
-    )
+from db import get_db_connection
 
 # Read current logged-in user
 def get_logged_in_user():

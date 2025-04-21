@@ -4,18 +4,7 @@ from mysql.connector import Error
 
 cart_bp = Blueprint('cart', __name__)
 
-# Database connection function
-def get_db_connection():
-    try:
-        return mysql.connector.connect(
-            host="localhost",
-            user="Aditi",
-        password="Aditi@0830",
-            database="MarketHub"
-        )
-    except Error as e:
-        print(f"Error: {e}")
-        return None
+from db import get_db_connection
 
 @cart_bp.route("/cart/add", methods=["POST"])
 def add_to_cart():

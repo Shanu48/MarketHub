@@ -5,13 +5,7 @@ auth_bp = Blueprint('auth', __name__)
 
 profile_bp = Blueprint('profile', __name__)
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="Aditi",
-        password="Aditi@0830",
-        database="MarketHub"
-    )
+from db import get_db_connection
 
 # Utility to generate new userID
 def generate_user_id(user_type):
