@@ -6,30 +6,34 @@
     <title>Profile</title>
     <link rel="stylesheet" href="customer.css">
 </head>
-<body>
+<body style=" background-color: white;">
     <header>
         <nav>
-            <a href="customer_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
-            <ul class="nav-links">
-                <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="order_details.html">Orders</a></li>
-                <li><a href="returns.html">Returns</a></li>
-            </ul>
+          <a href="customer_home.html"><img src="images/logo.png" alt="MarketHub"></a>
+          <ul class="nav-links">
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><a href="order_details.html">Orders</a></li>
+            <li><a href="returns.html">Returns</a></li>
+            <li><a href="../index.html" class="logout">Logout</a></li>
+          </ul>
         </nav>
     </header>
 
     <div class="profile-container">
-        <h2>Profile</h2>
-        <p><strong>Role:</strong> <span id="role"></span></p>
-        <p><strong>User ID:</strong> <span id="userID"></span></p>
-        <p><strong>Name:</strong> <span id="name"></span></p>
-        <p><strong>Email:</strong> <span id="email"></span></p>
-        <p><strong>Phone:</strong> <span id="phone"></span></p>
-        <p><strong>Address:</strong> <span id="address"></span></p>
-
-        <button class="logout-btn" onclick="logout()">Logout</button>
+        <div style="border: 2px rgb(255, 181, 90) solid; border-radius: 5px; padding: 5vh; background-color: rgb(207, 255, 245);">
+            <h2 style="color: rgb(4, 69, 61);">Profile</h2><br>
+            <p><strong>Role:</strong> <span id="role"></span></p>
+            <p><strong>User ID:</strong> <span id="userID"></span></p>
+            <p><strong>Name:</strong> <span id="name"></span></p>
+            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>Phone:</strong> <span id="phone"></span></p>
+            <p><strong>Address:</strong> <span id="address"></span></p>
+        </div>
+        <div style="margin-top: 10vh;">
+            <img src="images/customer.png" alt="Customer Image" style='width: 200px; height: auto; border-radius: 5px;'>
+            <p style="text-align: center; font-size: 22px;color: rgb(4, 69, 61); font-weight: 700;">Role: Customer</p>
+        </div>
     </div>
 
     <script>

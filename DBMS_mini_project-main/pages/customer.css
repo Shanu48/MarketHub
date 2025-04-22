@@ -279,20 +279,6 @@ nav img:hover{
     transform: scale(1.05);
 }
 
-/* Profile Page Styling */
-.profile-container {
-    max-width: 500px;
-    margin: 30px auto;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.profile-container p {
-    font-size: 16px;
-    margin-bottom: 5px;
-}
-
 .add-cart-btn, .quantity-controls button {
     background-color: rgb(3, 107, 93);
     color: white;
@@ -631,29 +617,8 @@ nav img:hover{
     color: red;
 }
 
-/*POROFILE*/
-.profile-container {
-    max-width: 600px;
-    margin: 100px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-/* Profile Info */
-.profile-info {
-    text-align: left;
-    padding: 10px;
-}
-
-.profile-info p {
-    font-size: 18px;
-    color: #333;
-    margin: 10px 0;
-}
-
-.profile-info strong {
-    color: #ff8c00;
+.profile-container{
+    padding: 10vw;
+    display: flex;
+    justify-content: space-around;
 }
