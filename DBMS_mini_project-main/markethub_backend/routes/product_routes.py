@@ -1,4 +1,6 @@
 from flask import Blueprint, jsonify
+from flask import request, jsonify  # Add request here
+
 import mysql.connector
 
 # Blueprint for product-related routes
@@ -32,10 +34,6 @@ def get_products():
     products = cursor.fetchall()
 
     # Print products to command prompt for debugging
-    print("\n--- Retrieved Products from Database ---")
-    for product in products:
-        print(product)
-    print("----------------------------------------\n")
 
     cursor.close()
     conn.close()
@@ -63,3 +61,69 @@ def get_suppliers():
     cursor.close()
     conn.close()
     return jsonify(suppliers)
+
+from flask import request, jsonify  # Add missing request import
+
+# Add these imports at the top
+import os
+from pathlib import Path
+
+def get_logged_in_user():
+    """Read userID from logged_in_user.txt in parent directory"""
+    try:
+        # Get path to parent directory of routes folder
+        current_dir = Path(__file__).parent  # routes directory
+        parent_dir = current_dir.parent      # markethub_backend directory
+        file_path = parent_dir / "logged_in_user.txt"
+        
+        with open(file_path, "r") as f:
+            user_id = f.read().strip()
+            print(f"DEBUG: Read userID from file: {user_id}")  # For debugging
+            return user_id
+    except Exception as e:
+        print(f"ERROR reading userID: {str(e)}")
+        return None
+
+# Modified cart route
+@product_blueprint.route("/cart/add", methods=["POST"])
+def add_to_cart():
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            return jsonify({"success": False, "error": "User not logged in"}), 401
+
+        data = request.get_json()
+        product_id = data.get('productID')
+        
+        print(f"DEBUG: Adding to cart - User: {user_id}, Product: {product_id}")  # Debugging
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verify customer exists
+        cursor.execute("SELECT * FROM Customer WHERE userID = %s", (user_id,))
+        if not cursor.fetchone():
+            return jsonify({"success": False, "error": "User not a customer"}), 400
+
+        # Verify product exists
+        cursor.execute("SELECT productID FROM Product WHERE productID = %s", (product_id,))
+        if not cursor.fetchone():
+            return jsonify({"success": False, "error": "Invalid product ID"}), 400
+
+        # Insert/update cart
+        cursor.execute("""
+            INSERT INTO Cart (userID, productID, quantity)
+            VALUES (%s, %s, 1)
+            ON DUPLICATE KEY UPDATE quantity = quantity + 1
+        """, (user_id, product_id))
+        
+        conn.commit()
+        return jsonify({"success": True, "message": "Item added to cart"})
+
+    except mysql.connector.Error as err:
+        print(f"DB ERROR: {str(err)}")  # Debugging
+        return jsonify({"success": False, "error": f"Database error: {err}"}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()

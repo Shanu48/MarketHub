@@ -1,6 +1,3 @@
-
-
-
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import requests
 import random
@@ -9,7 +6,6 @@ from flask_cors import CORS
 from routes.product_routes import product_blueprint
 from routes.auth_routes import auth_bp
 from routes.auth_routes import profile_bp
-from routes.cart_routes import cart_bp
 from routes.supplier_routes import supplier_bp
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -28,7 +24,6 @@ CORS(app)
 app.register_blueprint(auth_bp)
 app.register_blueprint(profile_bp)
 app.register_blueprint(product_blueprint, url_prefix='/')
-app.register_blueprint(cart_bp)
 app.register_blueprint(supplier_bp) 
 
 

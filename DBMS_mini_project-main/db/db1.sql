@@ -138,7 +138,14 @@ CREATE TABLE Fulfill (
     FOREIGN KEY (productID) REFERENCES Contains(productID)
 );
 
-
+CREATE TABLE Cart (
+    userID VARCHAR(10),
+    productID VARCHAR(10),
+    quantity INT,
+    PRIMARY KEY (userID, productID),
+    FOREIGN KEY (productID) REFERENCES product(productID),
+    FOREIGN KEY (userID) REFERENCES customer(userID),
+)
 
 -- Sample Data for User Table
 INSERT INTO User (userID, password) VALUES

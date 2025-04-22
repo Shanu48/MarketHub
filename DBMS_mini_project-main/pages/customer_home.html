@@ -62,7 +62,78 @@
   </section>
 
   <!-- Product Container -->
-  <div id="product-container" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;"></div>
+  <section class="product-table">
+    <div class="table-header">
+        <div class="col" style="display: none;">Product ID</div>
+        <div class="col">Product</div>
+        <div class="col">Description</div>
+        <div class="col">Price</div>
+        <div class="col">Category</div>
+        <div class="col">Supplier</div>
+        <div class="col">Actions</div>
+    </div>
+    
+    <div id="product-rows" class="table-body">
+        <!-- Dynamic content will be inserted here -->
+    </div>
+</section>
+
+
+<style>
+.product-table {
+  margin: 2rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+
+.table-header, .product-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  align-items: center;
+}
+
+.table-header {
+  background: #f8f9fa;
+  font-weight: 600;
+  border-bottom: 2px solid #eee;
+  border-radius: 10px 10px 0 0;
+}
+
+.product-row {
+  border-bottom: 1px solid #eee;
+  transition: background 0.3s ease;
+}
+
+.product-row:hover {
+  background: #f8f9fa;
+}
+
+.product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 1rem;
+}
+
+.add-cart-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.add-cart-btn:hover {
+  background: #218838;
+}
+</style>
+
 
   <script>
     
@@ -84,37 +155,69 @@
     }
 
     function displayProducts(products) {
-      const container = document.getElementById("product-container");
-      container.innerHTML = "";
+    const container = document.getElementById("product-rows");
+    container.innerHTML = "";
 
-      if (!Array.isArray(products) || products.length === 0) {
-        container.innerHTML = "<p>No products found</p>";
-        return;
-      }
-
-      products.forEach(product => {
-        const productDiv = document.createElement("div");
-        productDiv.classList.add("product-card");
-
+    products.forEach(product => {
+        const row = document.createElement("div");
+        row.className = "product-row";
+        row.setAttribute("data-product-id", product.productID);  // Store productID on row
+        
         const imageName = formatImageName(product.pName);
         const imagePath = `images/${imageName}`;
 
-        productDiv.innerHTML = `
-          <img src="${imagePath}" alt="${product.pName}" class="product-image" style="width: 200px; height: 200px; object-fit: cover; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
-          <h3>${product.pName}</h3>
-          <p>${product.description}</p>
-          <p><strong>Price:</strong> ₹${product.price} per ${product.unit}</p>
-          <p><strong>Category:</strong> ${product.categoryName}</p>
-          <p><strong>Supplier:</strong> ${product.sName}</p>
-          <div class="cart-actions" id="cart-${product.productID}">
-          <button class="add-cart-btn" onclick="addToCart(${product.productID})">Add to Cart</button>
-          </div>
-
+        row.innerHTML = `
+            <div class="col" style="display: none;">${product.productID}</div>
+            <div class="col">
+                <img src="${imagePath}" alt="${product.pName}" class="product-image">
+                ${product.pName}
+            </div>
+            <div class="col">${product.description}</div>
+            <div class="col">₹${product.price}/${product.unit}</div>
+            <div class="col">${product.categoryName}</div>
+            <div class="col">${product.sName}</div>
+            <div class="col">
+                <button class="add-cart-btn">Add to Cart</button>
+            </div>
         `;
 
-        container.appendChild(productDiv);
-      });
-    }
+        // Add event listener to the button
+        const button = row.querySelector('.add-cart-btn');
+        button.addEventListener('click', function(event) {
+            const productID = event.target.closest('.product-row').dataset.productId;
+            addToCart(productID);
+        });
+
+        container.appendChild(row);
+    });
+}
+
+
+
+function addToCart(productID) {
+  fetch("/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productID })  // Remove userID from here
+    })
+    .then(res => {
+        console.log("Response status:", res.status); // Debug
+        return res.json();
+    })
+    .then(data => {
+        console.log("Response data:", data); // Debug
+        if (data.success) {
+            renderQtyControls(productID, 1);
+        } else {
+            throw new Error(data.error || 'Unknown error');
+        }
+    })
+    .catch(error => {
+        console.error('Cart Error:', error);
+        alert(`Cart update failed: ${error.message}`);
+    });
+}
+
 
 
     function applyFilters() {
