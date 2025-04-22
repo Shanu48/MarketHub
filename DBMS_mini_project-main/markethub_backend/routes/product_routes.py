@@ -127,3 +127,87 @@ def add_to_cart():
         if conn.is_connected():
             cursor.close()
             conn.close()
+
+@product_blueprint.route("/cart/update", methods=["POST"])
+def update_cart():
+    try:
+        print("\n[DEBUG] Received cart update request")
+        user_id = get_logged_in_user()
+        if not user_id:
+            print("[ERROR] User not logged in")
+            return jsonify({"success": False, "error": "User not logged in"}), 401
+
+        data = request.get_json()
+        product_id = data.get('productID')
+        quantity = data.get('quantity')
+        
+        print(f"[DEBUG] Updating cart - User: {user_id}, Product: {product_id}, New Qty: {quantity}")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verify product exists
+        cursor.execute("SELECT productID FROM Product WHERE productID = %s", (product_id,))
+        if not cursor.fetchone():
+            print(f"[ERROR] Invalid product ID: {product_id}")
+            return jsonify({"success": False, "error": "Invalid product ID"}), 400
+
+        # Update cart quantity
+        cursor.execute("""
+            UPDATE Cart 
+            SET quantity = %s
+            WHERE userID = %s AND productID = %s
+        """, (quantity, user_id, product_id))
+        
+        conn.commit()
+        print("[SUCCESS] Cart updated successfully")
+        return jsonify({"success": True, "message": "Cart updated"})
+
+    except mysql.connector.Error as err:
+        print(f"[DATABASE ERROR] {str(err)}")
+        return jsonify({"success": False, "error": f"Database error: {err}"}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@product_blueprint.route("/cart/remove", methods=["POST"])
+def remove_from_cart():
+    try:
+        print("\n[DEBUG] Received cart remove request")
+        user_id = get_logged_in_user()
+        if not user_id:
+            print("[ERROR] User not logged in")
+            return jsonify({"success": False, "error": "User not logged in"}), 401
+
+        data = request.get_json()
+        product_id = data.get('productID')
+        
+        print(f"[DEBUG] Removing from cart - User: {user_id}, Product: {product_id}")
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Remove item from cart
+        cursor.execute("""
+            DELETE FROM Cart 
+            WHERE userID = %s AND productID = %s
+        """, (user_id, product_id))
+        
+        affected_rows = cursor.rowcount
+        conn.commit()
+        
+        if affected_rows > 0:
+            print("[SUCCESS] Item removed from cart")
+            return jsonify({"success": True, "message": "Item removed from cart"})
+        else:
+            print("[ERROR] Item not found in cart")
+            return jsonify({"success": False, "error": "Item not found in cart"}), 404
+
+    except mysql.connector.Error as err:
+        print(f"[DATABASE ERROR] {str(err)}")
+        return jsonify({"success": False, "error": f"Database error: {err}"}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
