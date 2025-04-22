@@ -9,44 +9,157 @@ body {
     background-color: #f5f5f5;
 }
 
+.product-table {
+    margin: 2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+
+.table-header, .product-row {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    align-items: center;
+}
+
+.table-header {
+    background: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #eee;
+    border-radius: 10px 10px 0 0;
+}
+
+.product-row {
+    border-bottom: 1px solid #eee;
+    transition: background 0.3s ease;
+}
+
+.product-row:hover {
+    background: #f8f9fa;
+}
+
+.product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 1rem;
+}
+
+.add-cart-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.add-cart-btn:hover {
+    background: #218838;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.quantity-controls button {
+    background: #28a745;
+    color: white;
+    border: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quantity-controls button:hover {
+    background: #218838;
+}
+
+.quantity-controls span {
+    min-width: 20px;
+    text-align: center;
+    }
+
 /* Navbar */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background: #f2f2f2;
+}
+
 header {
-    background-color: #00a34f;
+    background-color: rgb(3, 105, 93);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 5px 10px;
     position: fixed;
     width: 100%;
-    top: 0;
-    left: 0;
-    padding: 5px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     z-index: 1000;
 }
 
 nav {
-    justify-content: space-between;
     display: flex;
-    align-items: center; 
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav img {
+    border-radius: 50%;
+    height: 50px;
+    transition: box-shadow 0.3s ease;
+}
+
+nav img:hover{
+    box-shadow: 1px 2px 3px rgb(5, 158, 140);
 }
 
 .nav-links {
     list-style: none;
     display: flex;
-    align-items: center; 
+    gap: 10px;
 }
 
-.nav-links li {
-    font-weight: 700;
-    margin: 15px;
-    display: flex;
-    align-items: center; 
-    justify-content: center;
-}
-
-.nav-links a {
-    color: white;
+.nav-links li a {
+    background-color: rgb(3, 105, 93);
+    font-weight: 600;
     text-decoration: none;
-    font-size: 18px;
+    color: white;
+    padding: 6px 12px;
+    padding-bottom: 3px;
+    border-bottom: 3px solid transparent; 
+    transition: all 0.2s ease-in; 
+}
+
+.nav-links li a:hover {
+    color: rgb(255, 181, 90);
+    transition: ease-in 0.2s;
+    text-shadow: 0px 3px 4px rgb(1, 53, 47);
+    border-bottom: 3px rgb(1, 53, 47) solid;
+}
+
+.nav-links li a.logout {
+    margin-left: 26vw;
+    margin-right: 2vw;
+    background-color: rgb(1, 53, 47);
+    border-radius: 3px;
+    color: white;
+    box-shadow: 0 0 1px rgb(5, 158, 140);
+    transition: all 0.3s ease;
+}
+
+.nav-links li a.logout:hover {
+    box-shadow: 0 0 8px rgb(5, 158, 140);
+    transform: scale(1.05);
+    color: rgb(255, 181, 90);
 }
 
 
@@ -80,12 +193,12 @@ nav {
     font-size: 40px;
     margin-bottom: 10px;
     margin-top: 50px;
-    color: rgb(255, 140, 0);
+    color: rgb(255, 181, 90);
 }
 
 .hero p {
     font-size: 20px;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
 }
 
 
@@ -99,9 +212,24 @@ nav {
 }
 
 .shop-btn {
-    margin-top: 50px;
-    background-color: #27ae60;
+    background-color: rgb(3, 107, 93);
     color: white;
+    font-weight: 600;
+    border-radius: 5px;
+    box-shadow: 0 0 8px rgb(255, 181, 90);
+    animation: glowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 5px rgb(255, 181, 90);
+    }
+    50% {
+        box-shadow: 0 0 15px rgb(255, 246, 234);
+    }
+    100% {
+        box-shadow: 0 0 5px rgb(255, 181, 90);
+    }
 }
 
 .search_n_filter {

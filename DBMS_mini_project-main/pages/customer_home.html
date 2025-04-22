@@ -12,18 +12,14 @@
   <!-- Header Section -->
   <header>
     <nav>
-      <a href="customer_home.html">
-        <img src="images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;" />
-      </a>
-      <ul class="nav-links">
-        <li>
-          <a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a>
-        </li>
-        <li><a href="profile.html">Profile</a></li>
-        <li><a href="cart.html">Cart</a></li>
-        <li><a href="order_details.html">Orders</a></li>
-        <li><a href="returns.html">Returns</a></li>
-      </ul>
+        <a href="supplier_home.html"><img src="images/logo.png" alt="MarketHub"></a>
+        <ul class="nav-links">
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><a href="order_details.html">Orders</a></li>
+            <li><a href="returns.html">Returns</a></li>
+            <li><a href="../index.html" class="logout">Logout</a></li>
+        </ul>
     </nav>
   </header>
 
@@ -31,10 +27,11 @@
   <section class="hero">
     <div class="hero-overlay">
       <h1>MarketHub</h1>
-      <p><b>Buy fresh & organic wholesale groceries</b></p>
-      <p>Directly from known suppliers at the best prices!!</p>
+      <p><b>Buy fresh & organic wholesale groceries</b>
+        <br>Directly from known suppliers at the best prices!!
+      </p>
       <div class="hero-buttons" style="margin-top: 10px;">
-        <a class="shop-btn" href="#product">Shop Now</a>
+        <a class="shop-btn" href="#search-bar">Shop Now</a>
       </div>
     </div>
   </section>
@@ -77,93 +74,6 @@
         <!-- Dynamic content will be inserted here -->
     </div>
 </section>
-
-
-<style>
-.product-table {
-  margin: 2rem;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-}
-
-.table-header, .product-row {
-  display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr 1fr 1fr;
-  gap: 1rem;
-  padding: 1rem;
-  align-items: center;
-}
-
-.table-header {
-  background: #f8f9fa;
-  font-weight: 600;
-  border-bottom: 2px solid #eee;
-  border-radius: 10px 10px 0 0;
-}
-
-.product-row {
-  border-bottom: 1px solid #eee;
-  transition: background 0.3s ease;
-}
-
-.product-row:hover {
-  background: #f8f9fa;
-}
-
-.product-image {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-right: 1rem;
-}
-
-.add-cart-btn {
-  background: #28a745;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.add-cart-btn:hover {
-  background: #218838;
-}
-
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.quantity-controls button {
-  background: #28a745;
-  color: white;
-  border: none;
-  width: 25px;
-  height: 25px;
-  border-radius: 3px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.quantity-controls button:hover {
-  background: #218838;
-}
-
-.quantity-controls span {
-  min-width: 20px;
-  text-align: center;
-}
-
-</style>
-
-
   <script>
     
     let allProducts = [];
