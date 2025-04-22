@@ -211,3 +211,36 @@ def remove_from_cart():
         if conn.is_connected():
             cursor.close()
             conn.close()
+
+@product_blueprint.route("/cart/items", methods=["GET"])
+def get_cart_items():
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            return jsonify({"success": False, "error": "User not logged in"}), 401
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get all cart items with product details
+        cursor.execute("""
+            SELECT c.productID, c.quantity, p.pName, p.description, p.price, p.unit
+            FROM Cart c
+            JOIN Product p ON c.productID = p.productID
+            WHERE c.userID = %s
+        """, (user_id,))
+        
+        items = cursor.fetchall()
+        
+        return jsonify({
+            "success": True,
+            "items": items
+        })
+
+    except mysql.connector.Error as err:
+        print(f"Database error: {err}")
+        return jsonify({"success": False, "error": "Database error"}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()

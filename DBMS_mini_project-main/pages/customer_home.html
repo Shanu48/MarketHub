@@ -83,15 +83,19 @@
     }
 
     async function fetchProducts() {
-      try {
+    try {
+        console.log("[DEBUG] Fetching products...");
         const response = await fetch("http://127.0.0.1:5000/products");
         allProducts = await response.json();
         displayProducts(allProducts);
-        populateFilterOptions(); // Populate filters after loading products
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
+        populateFilterOptions();
+        
+        // Check cart status after products are loaded
+        await checkCartStatus();
+    } catch (error) {
+        console.error("[ERROR] Error fetching products:", error);
     }
+}
 
     function displayProducts(products) {
     const container = document.getElementById("product-rows");
@@ -166,85 +170,98 @@ function addToCart(productID) {
 }
 
 function updateCart(productID, change) {
-  console.log(`[DEBUG] Updating cart for product ${productID} with change ${change}`);
-  
-  // Find all quantity controls for this product
-  const quantityControls = document.querySelectorAll(`.quantity-controls[data-product-id="${productID}"]`);
-  console.log(`[DEBUG] Found ${quantityControls.length} quantity controls`);
-  
-  if (quantityControls.length === 0) {
-    console.error('[ERROR] No quantity controls found for product:', productID);
-    return;
-  }
-  
-  const firstControl = quantityControls[0];
-  const quantitySpan = firstControl.querySelector('.qty-value');
-  let currentQuantity = parseInt(quantitySpan.textContent);
-  let newQuantity = currentQuantity + change;
-  
-  console.log(`[DEBUG] Current quantity: ${currentQuantity}, New quantity: ${newQuantity}`);
-  
-  if (newQuantity <= 0) {
-    console.log(`[DEBUG] Removing product ${productID} from cart`);
+    console.log(`[DEBUG] Updating cart for product ${productID} with change ${change}`);
     
-    fetch("http://127.0.0.1:5000/cart/remove", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productID })
-    })
-    .then(res => {
-      console.log(`[DEBUG] Remove from cart response status: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      console.log(`[DEBUG] Remove from cart response data:`, data);
-      if (data.success) {
-        // Replace all quantity controls with "Add to Cart" button
-        quantityControls.forEach(control => {
-          control.outerHTML = `
-            <button class="add-cart-btn" data-product-id="${productID}" onclick="addToCart('${productID}')">
-              Add to Cart
-            </button>
-          `;
-        });
-      } else {
-        console.error(`[ERROR] Failed to remove from cart: ${data.error}`);
-        alert(data.error || 'Failed to remove from cart');
-      }
-    })
-    .catch(error => {
-      console.error('[ERROR] Remove from cart error:', error);
-      alert('Failed to remove from cart');
-    });
-  } else {
-    console.log(`[DEBUG] Updating quantity to ${newQuantity}`);
+    // Find all quantity controls for this product (across both pages)
+    const quantityControls = document.querySelectorAll(`.quantity-controls[data-product-id="${productID}"]`);
+    console.log(`[DEBUG] Found ${quantityControls.length} quantity controls`);
     
-    fetch("http://127.0.0.1:5000/cart/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productID, quantity: newQuantity })
-    })
-    .then(res => {
-      console.log(`[DEBUG] Update cart response status: ${res.status}`);
-      return res.json();
-    })
-    .then(data => {
-      console.log(`[DEBUG] Update cart response data:`, data);
-      if (data.success) {
-        // Update all quantity displays for this product
-        quantityControls.forEach(control => {
-          control.querySelector('.qty-value').textContent = newQuantity;
+    if (quantityControls.length === 0) {
+        console.error('[ERROR] No quantity controls found for product:', productID);
+        return;
+    }
+    
+    const firstControl = quantityControls[0];
+    const quantitySpan = firstControl.querySelector('.qty-value');
+    let currentQuantity = parseInt(quantitySpan.textContent);
+    let newQuantity = currentQuantity + change;
+    
+    console.log(`[DEBUG] Current quantity: ${currentQuantity}, New quantity: ${newQuantity}`);
+    
+    if (newQuantity <= 0) {
+        console.log(`[DEBUG] Removing product ${productID} from cart`);
+        
+        fetch("http://127.0.0.1:5000/cart/remove", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productID })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Replace all quantity controls with "Add to Cart" button
+                document.querySelectorAll(`.quantity-controls[data-product-id="${productID}"]`).forEach(control => {
+                    control.outerHTML = `
+                        <button class="add-cart-btn" data-product-id="${productID}" onclick="addToCart('${productID}')">
+                            Add to Cart
+                        </button>
+                    `;
+                });
+                
+                // If we're on the cart page, also remove the row
+                const cartRow = document.querySelector(`.cart-item[data-product-id="${productID}"]`);
+                if (cartRow) {
+                    cartRow.remove();
+                    // Update cart total if on cart page
+                    if (typeof updateCartTotal === 'function') {
+                        checkCartStatus().then(() => {
+                            const cartItems = Array.from(document.querySelectorAll('.cart-item')).map(row => {
+                                return {
+                                    productID: row.dataset.productId,
+                                    quantity: parseInt(row.querySelector('.qty-value').textContent),
+                                    price: parseFloat(row.querySelector('.col:nth-child(3)').textContent.replace('₹', ''))
+                                };
+                            });
+                            updateCartTotal(cartItems);
+                        });
+                    }
+                }
+            } else {
+                alert(data.error || 'Failed to remove from cart');
+            }
         });
-      } else {
-        console.error(`[ERROR] Failed to update cart: ${data.error}`);
-        alert(data.error || 'Failed to update cart');
-      }
-    })
-    .catch(error => {
-      console.error('[ERROR] Update cart error:', error);
-      alert('Failed to update cart');
-    });
-  }
+    } else {
+        console.log(`[DEBUG] Updating quantity to ${newQuantity}`);
+        
+        fetch("http://127.0.0.1:5000/cart/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productID, quantity: newQuantity })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Update all quantity displays for this product
+                quantityControls.forEach(control => {
+                    control.querySelector('.qty-value').textContent = newQuantity;
+                });
+                
+                // If we're on the cart page, update the total
+                if (typeof updateCartTotal === 'function') {
+                    const cartItems = Array.from(document.querySelectorAll('.cart-item')).map(row => {
+                        return {
+                            productID: row.dataset.productId,
+                            quantity: parseInt(row.querySelector('.qty-value').textContent),
+                            price: parseFloat(row.querySelector('.col:nth-child(3)').textContent.replace('₹', ''))
+                        };
+                    });
+                    updateCartTotal(cartItems);
+                }
+            } else {
+                alert(data.error || 'Failed to update cart');
+            }
+        });
+    }
 }
 
     function applyFilters() {
@@ -275,7 +292,51 @@ function updateCart(productID, change) {
 
       displayProducts(filtered);
     }
+    async function checkCartStatus() {
+    try {
+        console.log("[DEBUG] Checking cart status...");
+        const response = await fetch("http://127.0.0.1:5000/cart/items");
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log("[DEBUG] Cart items received:", data.items);
+            updateProductRows(data.items);
+        } else {
+            console.error("[ERROR] Failed to get cart items:", data.error);
+        }
+    } catch (error) {
+        console.error("[ERROR] Error checking cart status:", error);
+    }
+}
 
+function updateProductRows(cartItems) {
+    const productRows = document.querySelectorAll('.product-row');
+    
+    // Create a map of product IDs to quantities for quick lookup
+    const cartMap = {};
+    cartItems.forEach(item => {
+        cartMap[item.productID] = item.quantity;
+    });
+    
+    productRows.forEach(row => {
+        const productID = row.dataset.productId;
+        const quantity = cartMap[productID];
+        
+        if (quantity) {
+            // Product is in cart - show quantity controls
+            const actionCol = row.querySelector('.col:last-child');
+            if (actionCol && !actionCol.querySelector('.quantity-controls')) {
+                actionCol.innerHTML = `
+                    <div class="quantity-controls" data-product-id="${productID}">
+                        <button class="qty-btn minus" onclick="updateCart('${productID}', -1)">-</button>
+                        <span class="qty-value">${quantity}</span>
+                        <button class="qty-btn plus" onclick="updateCart('${productID}', 1)">+</button>
+                    </div>
+                `;
+            }
+        }
+    });
+}
     function populateFilterOptions() {
       const filterType = document.getElementById("filter-type").value;
       const filterOptions = document.getElementById("filter-options");
