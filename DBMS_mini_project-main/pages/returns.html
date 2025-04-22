@@ -3,24 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Returns</title>
-    <link rel="stylesheet" href="customer.css">
+    <title>MarketHub - Returns Center</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --secondary: #2196F3;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: var(--dark-gray);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        select:focus, input:focus, textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #3e8e41;
+        }
+        button.secondary {
+            background-color: var(--secondary);
+        }
+        button.danger {
+            background-color: var(--danger);
+        }
+        .return-card {
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .return-card:hover {
+            transform: translateY(-2px);
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status-pending {
+            background-color: var(--warning);
+            color: #000;
+        }
+        .status-approved {
+            background-color: var(--primary);
+            color: white;
+        }
+        .status-rejected {
+            background-color: var(--danger);
+            color: white;
+        }
+        .status-completed {
+            background-color: var(--secondary);
+            color: white;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: var(--danger);
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .success {
+            color: var(--primary);
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .section {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="customer_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
-            <ul class="nav-links">
-                <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="order_details.html">Orders</a></li>
-                <li><a href="returns.html">Returns</a></li>
-            </ul>
-        </nav>
-    </header>
+    <div class="container">
+        <h1>Returns Center</h1>
+        
+        <div class="section">
+            <h2>New Return Request</h2>
+            <div id="formMessage"></div>
+            <form id="returnForm">
+                <div class="form-group">
+                    <label for="orderSelect">Select Order</label>
+                    <select id="orderSelect" required>
+                        <option value="">Loading your orders...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productSelect">Select Product</label>
+                    <select id="productSelect" required disabled>
+                        <option value="">Please select an order first</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reasonSelect">Reason for Return</label>
+                    <select id="reasonSelect" required>
+                        <option value="">Select a reason</option>
+                        <option value="Damaged Item">Damaged Item</option>
+                        <option value="Wrong Item">Wrong Item Received</option>
+                        <option value="Quality Issues">Quality Issues</option>
+                        <option value="Expired Product">Expired Product</option>
+                        <option value="Changed Mind">Changed Mind</option>
+                        <option value="Other">Other Reason</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notesTextarea">Additional Notes</label>
+                    <textarea id="notesTextarea" placeholder="Please provide any additional details about your return..."></textarea>
+                </div>
+                
+                <button type="submit" id="submitBtn">Submit Return Request</button>
+            </form>
+        </div>
+        
+        <div class="section">
+            <div class="flex-row">
+                <h2>Your Return History</h2>
+                <button onclick="refreshHistory()" class="secondary">Refresh</button>
+            </div>
+            <div id="historyContainer">
+                <div class="loading">Loading your return history...</div>
+            </div>
+        </div>
+    </div>
 
+    <script>
+        const BASE_URL = 'http://localhost:5000/api';
+        let currentOrderProducts = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrderOptions();
+            document.getElementById('orderSelect').addEventListener('change', loadProductsForOrder);
+            document.getElementById('returnForm').addEventListener('submit', handleReturnSubmit);
+            fetchReturnHistory();
+        });
 
-    <script></script>
+        function loadOrderOptions() {
+            const orderSelect = document.getElementById('orderSelect');
+            orderSelect.innerHTML = '<option value="">Loading your orders...</option>';
+            
+            fetch(`${BASE_URL}/order-options`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(handleResponse)
+            .then(data => {
+                if (data.success) {
+                    orderSelect.innerHTML = data.orders.length 
+                        ? '<option value="">Select an order</option>'
+                        : '<option value="">No orders available for return</option>';
+                    
+                    data.orders.forEach(order => {
+                        const option = document.createElement('option');
+                        option.value = order.orderID;
+                        option.textContent = `Order #${order.orderID} - ${order.date}`;
+                        orderSelect.appendChild(option);
+                    });
+                } else {
+                    showMessage('error', data.error || 'Failed to load orders');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading orders:', error);
+                showMessage('error', `Failed to load orders: ${error.message}`);
+                orderSelect.innerHTML = '<option value="">Error loading orders</option>';
+            });
+        }
+
+        function loadProductsForOrder() {
+            const orderId = this.value;
+            const productSelect = document.getElementById('productSelect');
+            
+            if (!orderId) {
+                productSelect.innerHTML = '<option value="">Please select an order first</option>';
+                productSelect.disabled = true;
+                return;
+            }
+            
+            productSelect.innerHTML = '<option value="">Loading products...</option>';
+            productSelect.disabled = true;
+            
+            fetch(`${BASE_URL}/product-options/${orderId}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(handleResponse)
+            .then(data => {
+                if (data.success) {
+                    currentOrderProducts = data.products;
+                    productSelect.innerHTML = data.products.length 
+                        ? '<option value="">Select a product</option>'
+                        : '<option value="">No products available for return</option>';
+                    
+                    data.products.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.productID;
+                        option.textContent = `${product.pName}`;
+                        productSelect.appendChild(option);
+                    });
+                    productSelect.disabled = false;
+                } else {
+                    showMessage('error', data.error || 'Failed to load products');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                showMessage('error', `Failed to load products: ${error.message}`);
+                productSelect.innerHTML = '<option value="">Error loading products</option>';
+            });
+        }
+
+        function handleReturnSubmit(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            const orderId = document.getElementById('orderSelect').value;
+            const productId = document.getElementById('productSelect').value;
+            const reason = document.getElementById('reasonSelect').value;
+            const notes = document.getElementById('notesTextarea').value;
+            
+            fetch(`${BASE_URL}/initiate`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderID: orderId,
+                    productID: productId,
+                    reason: reason,
+                    notes: notes
+                })
+            })
+            .then(handleResponse)
+            .then(data => {
+                if (data.success) {
+                    showMessage('success', `Return request submitted successfully! Return ID: ${data.returnID}`);
+                    document.getElementById('returnForm').reset();
+                    document.getElementById('productSelect').disabled = true;
+                    fetchReturnHistory();
+                } else {
+                    throw new Error(data.error || 'Failed to submit return');
+                }
+            })
+            .catch(error => {
+                console.error('Error submitting return:', error);
+                showMessage('error', error.message);
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Return Request';
+            });
+        }
+
+        function fetchReturnHistory() {
+            const historyContainer = document.getElementById('historyContainer');
+            historyContainer.innerHTML = '<div class="loading">Loading your return history...</div>';
+            
+            fetch(`${BASE_URL}/history`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(handleResponse)
+            .then(data => {
+                if (data.success) {
+                    renderReturnHistory(data.returns);
+                } else {
+                    throw new Error(data.error || 'Failed to load history');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading history:', error);
+                historyContainer.innerHTML = `
+                    <div class="error">
+                        Error loading return history: ${error.message}<br>
+                        <button onclick="fetchReturnHistory()">Retry</button>
+                    </div>
+                `;
+            });
+        }
+
+        function renderReturnHistory(returns) {
+            const historyContainer = document.getElementById('historyContainer');
+            
+            if (!returns || returns.length === 0) {
+                historyContainer.innerHTML = '<div class="loading">You have no return requests yet.</div>';
+                return;
+            }
+            
+            let html = '';
+            returns.forEach(ret => {
+                const statusClass = `status-${ret.status.toLowerCase()}`;
+                
+                html += `
+                <div class="return-card">
+                    <div class="flex-row">
+                        <div>
+                            <strong>Return #${ret.returnID}</strong><br>
+                            <small>Order #${ret.orderID} • ${ret.date}</small>
+                        </div>
+                        <div>
+                            <span class="status ${statusClass}">${ret.status}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <p><strong>Product:</strong> ${ret.product}</p>
+                        <p><strong>Reason:</strong> ${ret.reason}</p>
+                        ${ret.notes ? `<p><strong>Notes:</strong> ${ret.notes}</p>` : ''}
+                    </div>
+                </div>
+                `;
+            });
+            
+            historyContainer.innerHTML = html;
+        }
+
+        function refreshHistory() {
+            fetchReturnHistory();
+        }
+
+        function handleResponse(response) {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || `Request failed with status ${response.status}`);
+                });
+            }
+            return response.json();
+        }
+
+        function showMessage(type, message) {
+            const messageDiv = document.getElementById('formMessage');
+            messageDiv.className = type;
+            messageDiv.innerHTML = message;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
 </body>
 </html>

@@ -7,6 +7,7 @@ from routes.product_routes import product_blueprint
 from routes.auth_routes import auth_bp
 from routes.auth_routes import profile_bp
 from routes.supplier_routes import supplier_bp
+from routes.returns_routes import returns_blueprint
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
@@ -19,11 +20,11 @@ app.secret_key = "Shanu@04082005"
 
 # Enable CORS
 CORS(app, resources={
-    r"/orders/*": {
-        "origins": ["http://127.0.0.1:5501", "http://localhost:5501"],
+    r"/api/*": {
+        "origins": ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:5501"],
         "supports_credentials": True,
-        "allow_headers": ["Content-Type"],
-        "methods": ["GET", "POST", "OPTIONS"]
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
     }
 })
 
@@ -32,6 +33,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(profile_bp)
 app.register_blueprint(product_blueprint, url_prefix='/')
 app.register_blueprint(supplier_bp) 
+app.register_blueprint(returns_blueprint, url_prefix='/api')
 
 
 # Serve product page
