@@ -216,19 +216,23 @@ nav img:hover{
     color: white;
     font-weight: 600;
     border-radius: 5px;
-    box-shadow: 0 0 8px rgb(255, 181, 90);
+    box-shadow: 0 0 8px rgb(0, 0, 0);
     animation: glowPulse 1.5s ease-in-out infinite;
 }
 
 @keyframes glowPulse {
     0% {
-        box-shadow: 0 0 5px rgb(255, 181, 90);
+        box-shadow: 0 0 5px rgb(0, 0, 0);
+        color: #ffa659;
     }
     50% {
-        box-shadow: 0 0 15px rgb(255, 246, 234);
+        box-shadow: 0 0 15px rgb(0, 0, 0);
+        color: #ffffff;
+        font-size: 20px;
     }
     100% {
-        box-shadow: 0 0 5px rgb(255, 181, 90);
+        box-shadow: 0 0 5px rgb(0, 0, 0);
+        color: #ffa659;
     }
 }
 
