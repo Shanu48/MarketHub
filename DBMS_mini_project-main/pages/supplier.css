@@ -114,7 +114,6 @@ input, select {
 }
 
 button {
-    background: #4CAF50;
     color: white;
     border: none;
     padding: 12px 20px;
@@ -125,7 +124,6 @@ button {
 }
 
 button:hover {
-    background: #45a049;
 }
 
 .dashboard {
