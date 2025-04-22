@@ -1,41 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cart</title>
-    <link rel="stylesheet" href="customer.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Cart</title>
+  <link rel="stylesheet" href="customer.css" />
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="customer_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
-            <ul class="nav-links">
-                <li><a href="../index.html" style="background-color: rgb(255, 140, 0); border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="order_details.html">Orders</a></li>
-                <li><a href="returns.html">Returns</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <section class="cart-container">
-        <h2>Your Cart</h2>
-        <div class="cart-items"></div>
-        <div class="cart-summary">
-            <p class="cart-total"><strong>Total:</strong> Rs. <span id="total-price">0.00</span></p>
-            <button id="checkout-btn">Proceed to Checkout</button>
-        </div>
-    </section>
+<body style="justify-content: center; align-items: center;">
+  <!-- Header Section (same as customer_home.html) -->
+  <header>
+    <nav>
+      <a href="customer_home.html"><img src="images/logo.png" alt="MarketHub"></a>
+      <ul class="nav-links">
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="cart.html">Cart</a></li>
+        <li><a href="order_details.html">Orders</a></li>
+        <li><a href="returns.html">Returns</a></li>
+        <li><a href="../index.html" class="logout">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Cart Title -->
+  <section class="cart-title">
+    <h1>Your Shopping Cart</h1>
+  </section>
+
+  <!-- Cart Items Table -->
+  <section class="cart-table">
+    <div class="table-header">
+        <div class="col">Product</div>
+        <div class="col">Description</div>
+        <div class="col">Price</div>
+        <div class="col">Quantity</div>
+        <div class="col">Total</div>
+        <div class="col">Actions</div>
+    </div>
     
-    <h1>Your Cart</h1>
-    <p>Total: ₹<strong>500</strong></p>
-    <form method="POST" action="/checkout">
-        <input type="hidden" name="amount" value="500">
-        <button type="submit">Pay Now</button>
-    </form>
+    <div id="cart-items" class="table-body">
+        <!-- Cart items will be loaded here -->
+    </div>
 
-    <script></script>
+    <div class="cart-summary">
+        <div class="total-amount">
+            <span>Total: ₹</span>
+            <span id="cart-total">0.00</span>
+        </div>
+        <button id="checkout-btn" class="checkout-btn">Proceed to Checkout</button>
+    </div>
+</section>
+
+<script>
+// Function to load cart items
+async function loadCartItems() {
+    try {
+        const response = await fetch("http://127.0.0.1:5000/cart/items");
+        const data = await response.json();
+        
+        console.log("Cart items data:", data);
+        
+        if (data.success) {
+            displayCartItems(data.items);
+            updateCartTotal(data.items);
+        } else {
+            console.error("Error loading cart:", data.error);
+            alert("Failed to load cart: " + (data.error || "Unknown error"));
+        }
+    } catch (error) {
+        console.error("Error fetching cart items:", error);
+        alert("Failed to load cart. Please try again.");
+    }
+}
+
+// Function to display cart items
+function displayCartItems(items) {
+    const container = document.getElementById("cart-items");
+    container.innerHTML = "";
+
+    if (items.length === 0) {
+        container.innerHTML = `<div class="empty-cart">Your cart is empty</div>`;
+        return;
+    }
+
+    items.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "cart-item";
+        row.setAttribute("data-product-id", item.productID);
+        
+        const imageName = formatImageName(item.pName);
+        const imagePath = `images/${imageName}`;
+        const totalPrice = item.price * item.quantity;
+
+        row.innerHTML = `
+            <div class="col">
+                <img src="${imagePath}" alt="${item.pName}" class="product-image">
+                ${item.pName}
+            </div>
+            <div class="col">${item.description}</div>
+            <div class="col">₹${item.price}/${item.unit}</div>
+            <div class="col">
+                <div class="quantity-controls" data-product-id="${item.productID}">
+                    <button class="qty-btn minus" onclick="updateCart('${item.productID}', -1)">-</button>
+                    <span class="qty-value">${item.quantity}</span>
+                    <button class="qty-btn plus" onclick="updateCart('${item.productID}', 1)">+</button>
+                </div>
+            </div>
+            <div class="col">₹${totalPrice.toFixed(2)}</div>
+            <div class="col">
+                <button class="remove-btn" onclick="removeFromCart('${item.productID}')">Remove</button>
+            </div>
+        `;
+
+        container.appendChild(row);
+    });
+}
+
+// Function to update cart total
+function updateCartTotal(items) {
+    const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById("cart-total").textContent = total.toFixed(2);
+}
+
+// Function to format image name (same as in customer_home.html)
+function formatImageName(pName) {
+    return pName.toLowerCase().replace(/\s+/g, "") + ".png";
+}
+
+// Function to update cart quantity (similar to customer_home.html but with cart page updates)
+function updateCart(productID, change) {
+    console.log(`Updating cart for product ${productID} with change ${change}`);
+    
+    const quantityControls = document.querySelectorAll(`.quantity-controls[data-product-id="${productID}"]`);
+    if (quantityControls.length === 0) return;
+    
+    const quantitySpan = quantityControls[0].querySelector('.qty-value');
+    let currentQuantity = parseInt(quantitySpan.textContent);
+    let newQuantity = currentQuantity + change;
+    
+    if (newQuantity <= 0) {
+        removeFromCart(productID);
+        return;
+    }
+    
+    fetch("http://127.0.0.1:5000/cart/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productID, quantity: newQuantity })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Update all quantity displays for this product
+            quantityControls.forEach(control => {
+                control.querySelector('.qty-value').textContent = newQuantity;
+            });
+            // Reload cart to update totals
+            loadCartItems();
+        } else {
+            alert(data.error || 'Failed to update cart');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to update cart');
+    });
+}
+
+// Function to remove item from cart
+function removeFromCart(productID) {
+    if (!confirm("Are you sure you want to remove this item from your cart?")) return;
+    
+    fetch("http://127.0.0.1:5000/cart/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productID })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the item from the DOM
+            document.querySelector(`.cart-item[data-product-id="${productID}"]`)?.remove();
+            // Reload cart to update totals
+            loadCartItems();
+        } else {
+            alert(data.error || 'Failed to remove item');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to remove item');
+    });
+}
+
+// Initialize the page when loaded
+document.addEventListener("DOMContentLoaded", function() {
+    loadCartItems();
+    
+    // Add checkout button event listener
+    document.getElementById("checkout-btn")?.addEventListener("click", function() {
+        // Implement checkout functionality
+        alert("Proceeding to checkout - this would redirect to checkout page");
+    });
+});
+</script>
 </body>
 </html>
