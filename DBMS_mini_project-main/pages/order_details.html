@@ -3,31 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders</title>
-    <link rel="stylesheet" href="customer.css">
+    <title>Your Orders - MarketHub</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .order-header {
+            background-color: #f8f9fa;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+        }
+        .order-details {
+            padding: 15px;
+        }
+        .order-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .order-items th, .order-items td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .order-items th {
+            background-color: #f8f9fa;
+        }
+        .track-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .track-btn:hover {
+            background-color: #45a049;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-processing {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .status-shipped {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .status-delivered {
+            background-color: #28a745;
+            color: white;
+        }
+        .address {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        #tracking-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .close-btn {
+            margin-top: 20px;
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="customer_home.html"><img src="/pages/images/logo.png" alt="MarketHub" style="border-radius: 50%; height: 50px;"></a>
-            <ul class="nav-links">
-                <li><a href="../index.html" style="background-color: rgb(255, 140, 0)00a34f; border-radius: 5px; padding: 5px 10px; box-shadow: 0 0 5px rgb(0, 133, 62);">Logout</a></li>
-                <li><a href="profile.html">Profile</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="order_details.html">Orders</a></li>
-                <li><a href="returns.html">Returns</a></li>
-            </ul>
-        </nav>
-    </header>
+    <div class="container">
+        <h1>Your Orders</h1>
+        <div id="orders-container">Loading orders...</div>
+    </div>
 
-    <main>
-        <div class="orders-container">
-            <h2>Your Orders</h2>
-            <div id="orders-list"></div>
-            <!--MAKE IT A TABLE-->
+    <!-- Modal for tracking -->
+    <div id="tracking-modal">
+        <div class="modal-content">
+            <h2 id="modal-order-id"></h2>
+            <div id="tracking-details" style="margin-top:20px;"></div>
+            <button class="close-btn" onclick="closeTrackingModal()">Close</button>
         </div>
-    </main>
+    </div>
 
-    <script></script>
+    <script>
+        // Base URL for your Flask backend
+        const BASE_URL = 'http://localhost:5000';
+        
+        // Initialize when DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM fully loaded, fetching orders...");
+            fetchOrders();
+        });
+
+        function fetchOrders() {
+            console.log("Fetching orders from backend...");
+            
+            fetch(`${BASE_URL}/orders/history`, { 
+                method: 'GET',
+                credentials: 'include',  // Include cookies for session
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log("Received response with status:", response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Successfully received orders data:", data);
+                if (data && data.success) {
+                    renderOrders(data.orders);
+                } else {
+                    showError(data.error || 'Failed to load orders');
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching orders:", error);
+                showError(`Failed to load orders. ${error.message}`);
+            });
+        }
+
+        function renderOrders(orders) {
+            console.log("Rendering orders:", orders);
+            const container = document.getElementById('orders-container');
+            
+            if (!orders || orders.length === 0) {
+                container.innerHTML = '<p>You have no orders yet.</p>';
+                return;
+            }
+
+            let html = '';
+            orders.forEach(order => {
+                html += `
+                <div class="order-card">
+                    <div class="order-header">
+                        <div>
+                            <strong>Order #${order.orderID}</strong>
+                            <div style="font-size:14px; color:#666; margin-top:4px;">
+                                Placed on ${new Date(order.date).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div>
+                            <strong>Total: ₹${order.totalPrice.toLocaleString()}</strong>
+                            <button class="track-btn" onclick="trackOrder('${order.orderID}')">Track Order</button>
+                        </div>
+                    </div>
+                    <div class="order-details">
+                        <div class="address">
+                            <strong>Delivery Address:</strong>
+                            <p>${order.houseNo}, ${order.streetName}<br>
+                            ${order.city}, ${order.state} - ${order.pin}</p>
+                        </div>
+                        <table class="order-items">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${order.items.map(item => `
+                                    <tr>
+                                        <td>${item.pName} (${item.unit})</td>
+                                        <td>₹${item.price}</td>
+                                        <td>${item.productQuantity}</td>
+                                        <td>₹${item.price * item.productQuantity}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function trackOrder(orderId) {
+    console.log("Tracking order:", orderId);
+    fetch(`http://localhost:5000/order/track/${orderId}`, {
+        method: 'GET',
+        credentials: 'include',  // Important for session cookies
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Handle HTTP errors (4xx, 5xx)
+            return response.json().then(err => {
+                throw new Error(err.error || 'Failed to track order');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Tracking data received:", data);
+        if (data.success) {
+            showTrackingModal(data);
+        } else {
+            alert(`Error: ${data.error || 'Failed to track order'}`);
+        }
+    })
+    .catch(error => {
+        console.error("Error tracking order:", error);
+        alert(`Failed to track order: ${error.message}`);
+    });
+}
+
+        function showTrackingModal(data) {
+            console.log("Showing tracking modal for order:", data.order_id);
+            const modal = document.getElementById('tracking-modal');
+            const orderIdElement = document.getElementById('modal-order-id');
+            const trackingDetails = document.getElementById('tracking-details');
+            
+            orderIdElement.textContent = `Order #${data.order_id}`;
+            
+            let statusHtml = `
+                <p><strong>Order Date:</strong> ${data.status.order_date}</p>
+                <div style="margin-top:15px;">
+                    <h3>Order Status</h3>
+                    <div style="margin-top:10px;">
+                        <p><strong>Shipping:</strong> 
+                            <span class="status-badge ${getStatusClass(data.status.shipping)}">
+                                ${data.status.shipping || 'Processing'}
+                            </span>
+                        </p>
+                        <p><strong>Returns:</strong> 
+                            <span class="status-badge ${getStatusClass(data.status.returns)}">
+                                ${data.status.returns || 'None'}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div style="margin-top:20px;">
+                    <h3>Tracking Timeline</h3>
+                    <div style="margin-left:20px; margin-top:10px; border-left:2px solid #ddd; padding-left:20px;">
+                        <div style="margin-bottom:15px; position:relative;">
+                            <div style="position:absolute; left:-25px; top:0; width:16px; height:16px; border-radius:50%; background-color:#28a745;"></div>
+                            <p style="margin:0;"><strong>Order Placed</strong><br>
+                            <small>${data.status.order_date}</small></p>
+                        </div>
+                        <div style="margin-bottom:15px; position:relative;">
+                            <div style="position:absolute; left:-25px; top:0; width:16px; height:16px; border-radius:50%; background-color:#${data.status.shipping === 'Shipped' ? '28a745' : 'ddd'}"></div>
+                            <p style="margin:0;"><strong>Shipped</strong><br>
+                            <small>${data.status.shipping === 'Shipped' ? 'On its way' : 'Processing'}</small></p>
+                        </div>
+                        <div style="margin-bottom:15px; position:relative;">
+                            <div style="position:absolute; left:-25px; top:0; width:16px; height:16px; border-radius:50%; background-color:#${data.status.shipping === 'Delivered' ? '28a745' : 'ddd'}"></div>
+                            <p style="margin:0;"><strong>Delivered</strong><br>
+                            <small>${data.status.shipping === 'Delivered' ? 'Delivered to your address' : 'Not yet delivered'}</small></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            trackingDetails.innerHTML = statusHtml;
+            modal.style.display = 'flex';
+        }
+
+        function closeTrackingModal() {
+            document.getElementById('tracking-modal').style.display = 'none';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = `
+                <div style="color: red; padding: 20px; border: 1px solid red; border-radius: 4px;">
+                    ${message}
+                    <button onclick="fetchOrders()" style="margin-top: 10px; padding: 5px 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                        Retry
+                    </button>
+                </div>
+            `;
+        }
+
+        function getStatusClass(status) {
+            if (!status) return '';
+            status = status.toLowerCase();
+            if (status.includes('processing') || status.includes('preparing')) return 'status-processing';
+            if (status.includes('shipped') || status.includes('transit')) return 'status-shipped';
+            if (status.includes('delivered') || status.includes('complete')) return 'status-delivered';
+            return '';
+        }
+    </script>
 </body>
 </html>

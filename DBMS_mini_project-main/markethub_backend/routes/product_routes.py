@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template  # Add render_template here
 import mysql.connector
 import os
 from pathlib import Path
@@ -314,3 +314,122 @@ def place_order():
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
+
+@product_blueprint.route("/orders/history", methods=["GET", "OPTIONS"])
+def get_order_history():
+    print("DEBUG: /orders/history endpoint hit")  # Debug log
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            print("DEBUG: User not logged in")  # Debug log
+            return jsonify({"success": False, "error": "User not logged in"}), 401
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        print(f"DEBUG: Fetching orders for user {user_id}")  # Debug lo
+        # Get order history with address details
+        cursor.execute("""
+            SELECT o.orderID, o.date, o.totalPrice, 
+                   a.houseNo, a.streetName, a.city, a.state, a.pin
+            FROM Orders o
+            LEFT JOIN Address a ON o.userID = a.userID
+            WHERE o.userID = %s
+            ORDER BY o.date DESC
+        """, (user_id,))
+        orders = cursor.fetchall()
+
+        # Get order items for each order
+        for order in orders:
+            cursor.execute("""
+                SELECT c.productID, c.productQuantity, p.pName, p.price, p.unit
+                FROM Contains c
+                JOIN Product p ON c.productID = p.productID
+                WHERE c.orderID = %s
+            """, (order['orderID'],))
+            order['items'] = cursor.fetchall()
+
+        return jsonify({"success": True, "orders": orders})
+
+    except mysql.connector.Error as err:
+        return jsonify({"success": False, "error": f"Database error: {err}"}), 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@product_blueprint.route("/order/track/<order_id>", methods=["GET", "OPTIONS"])
+def track_order(order_id):
+    if request.method == "OPTIONS":
+        # Handle preflight request
+        response = jsonify({"success": True})
+        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
+        return response
+    
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            response = jsonify({"success": False, "error": "User not logged in"})
+            response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
+            response.headers.add("Access-Control-Allow-Credentials", "true")
+            return response, 401
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Verify order belongs to user
+        cursor.execute("""
+            SELECT orderID FROM Orders 
+            WHERE orderID = %s AND userID = %s
+        """, (order_id, user_id))
+        if not cursor.fetchone():
+            response = jsonify({"success": False, "error": "Order not found"})
+            response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
+            response.headers.add("Access-Control-Allow-Credentials", "true")
+            return response, 404
+
+        # Get order status
+        cursor.execute("""
+            SELECT t.status as transport_status, 
+                   r.status as return_status,
+                   o.date as order_date
+            FROM Orders o
+            LEFT JOIN Transport t ON o.orderID = t.orderID
+            LEFT JOIN Returns r ON o.orderID = r.orderID
+            WHERE o.orderID = %s
+        """, (order_id,))
+        status = cursor.fetchone()
+
+        if not status:
+            response = jsonify({"success": False, "error": "Status not available"})
+            response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
+            response.headers.add("Access-Control-Allow-Credentials", "true")
+            return response, 404
+
+        response = jsonify({
+            "success": True,
+            "order_id": order_id,
+            "status": {
+                "order_date": status['order_date'].strftime('%Y-%m-%d') if status['order_date'] else None,
+                "shipping": status['transport_status'] or "Preparing",
+                "returns": status['return_status'] or "None"
+            }
+        })
+        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        return response
+
+    except mysql.connector.Error as err:
+        response = jsonify({"success": False, "error": f"Database error: {err}"})
+        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        return response, 500
+    finally:
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+@product_blueprint.route("/orders-page")  # Route to serve the HTML page
+def orders_page():
+    return render_template("orders.html")

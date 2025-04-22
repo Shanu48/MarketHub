@@ -18,7 +18,14 @@ app = Flask(__name__)
 app.secret_key = "Shanu@04082005"
 
 # Enable CORS
-CORS(app)
+CORS(app, resources={
+    r"/orders/*": {
+        "origins": ["http://127.0.0.1:5501", "http://localhost:5501"],
+        "supports_credentials": True,
+        "allow_headers": ["Content-Type"],
+        "methods": ["GET", "POST", "OPTIONS"]
+    }
+})
 
 # Register Blueprints
 app.register_blueprint(auth_bp)
