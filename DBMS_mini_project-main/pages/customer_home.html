@@ -130,11 +130,13 @@
       ? `<p class="product-price">
            <span class="original-price">₹${product.originalPrice}</span>
            <span class="discounted-price">₹${product.sellingPrice}/${product.unit}</span>
+           <span class="discount-badge">${product.discountPercentage}% OFF</span>
          </p>`
       : `<p class="product-price">₹${product.sellingPrice}/${product.unit}</p>`;
 
     row.innerHTML = `
       <div class="product-card">
+        ${product.discountPercentage ? '<span class="discount-corner">Sale</span>' : ''}
         <img src="${imagePath}" alt="${product.pName}" class="product-image" />
         <h3 class="product-name">${product.pName}</h3>
         <p class="product-description">${product.description}</p>
@@ -265,25 +267,26 @@
   });
 }
 
-    function applyFilters() {
-      let filtered = [...allProducts];
-      const searchText = document.getElementById("search-bar").value.toLowerCase();
-      const sort = document.getElementById("sort-options").value;
-      const filterType = document.getElementById("filter-type").value;
-      const filterValue = document.getElementById("filter-options").value;
+function applyFilters() {
+  let filtered = [...allProducts];
+  const searchText = document.getElementById("search-bar").value.toLowerCase();
+  const sort = document.getElementById("sort-options").value;
+  const filterType = document.getElementById("filter-type").value;
+  const filterValue = document.getElementById("filter-options").value;
 
-      if (searchText) {
-        filtered = filtered.filter(p => p.pName.toLowerCase().includes(searchText));
-      }
-      if (filterType && filterValue) {
-        if (filterType === "category") filtered = filtered.filter(p => p.categoryName === filterValue);
-        if (filterType === "supplier") filtered = filtered.filter(p => p.sName === filterValue);
-      }
-      if (sort === "price-low") filtered.sort((a, b) => a.price - b.price);
-      if (sort === "price-high") filtered.sort((a, b) => b.price - a.price);
+  if (searchText) {
+    filtered = filtered.filter(p => p.pName.toLowerCase().includes(searchText));
+  }
+  if (filterType && filterValue) {
+    if (filterType === "category") filtered = filtered.filter(p => p.categoryName === filterValue);
+    if (filterType === "supplier") filtered = filtered.filter(p => p.sName === filterValue);
+  }
+  if (sort === "price-low") filtered.sort((a, b) => a.sellingPrice - b.sellingPrice);
+  if (sort === "price-high") filtered.sort((a, b) => b.sellingPrice - a.sellingPrice);
+  if (sort === "discount") filtered.sort((a, b) => (b.discountPercentage || 0) - (a.discountPercentage || 0));
 
-      displayProducts(filtered);
-    }
+  displayProducts(filtered);
+}
 
     function populateFilterOptions() {
       const filterType = document.getElementById("filter-type").value;

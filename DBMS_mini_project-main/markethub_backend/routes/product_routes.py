@@ -237,45 +237,71 @@ def get_cart_items():
             cursor.close()
             conn.close()
 
-@product_blueprint.route("/user/addresses", methods=["GET"])
-def get_user_addresses():
+@product_blueprint.route("/user/address", methods=["GET"])
+def get_user_address():
+    conn = None
+    cursor = None
     try:
+        print("\n===== DEBUG: Starting address retrieval =====")
+        
+        # 1. Get logged in user
         user_id = get_logged_in_user()
+        print(f"DEBUG: Retrieved user ID: {user_id}")
         if not user_id:
+            print("DEBUG: No user ID found - not logged in")
             return jsonify({"success": False, "error": "User not logged in"}), 401
 
+        # 2. Connect to database
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Address WHERE userID = %s", (user_id,))
-        addresses = cursor.fetchall()
-        return jsonify({"success": True, "addresses": addresses})
+        print("DEBUG: Database connection established")
 
-    except mysql.connector.Error as err:
-        return jsonify({"success": False, "error": "Database error"}), 500
+        # 3. Execute query
+        query = "SELECT houseNo, streetName, city, state, pin FROM Address WHERE userID = %s LIMIT 1"
+        print(f"DEBUG: Executing query: {query} with userID: {user_id}")
+        cursor.execute(query, (user_id,))
+        
+        # 4. Process results
+        address = cursor.fetchone()
+        print(f"DEBUG: Query result: {address}")
+        
+        if not address:
+            print("DEBUG: No address found for user")
+            return jsonify({"success": True, "address": None})
+            
+        print("DEBUG: Address found, returning response")
+        response = jsonify({
+            "success": True,
+            "address": address
+        })
+        
+        # 5. Debug CORS headers
+        response.headers.add('Access-Control-Allow-Origin', 'http://127.0.0.1:5501')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        print(f"DEBUG: Response headers: {response.headers}")
+        
+        return response
+
+    except Exception as e:
+        print(f"ERROR: {str(e)}")
+        return jsonify({"success": False, "error": str(e)}), 500
     finally:
-        if conn.is_connected():
+        if conn and conn.is_connected():
             cursor.close()
             conn.close()
+        print("===== DEBUG: Address retrieval completed =====\n")
 
 @product_blueprint.route('/orders/place', methods=['POST'])
 def place_order():
     conn = None
     cursor = None
     try:
-        print("DEBUG: Received request to place order")  # Debug log
-        
-        # 1. Get userID from logged_in_user.txt
         user_id = get_logged_in_user()
         if not user_id:
-            print("DEBUG: User not logged in")  # Debug log
             return jsonify({"success": False, "error": "User not logged in"}), 401
 
-        # Get request data
         data = request.get_json()
-        print(f"DEBUG: Received data: {data}")  # Debug log
-        
         if not data:
-            print("DEBUG: No data received in request")  # Debug log
             return jsonify({"success": False, "error": "No data received"}), 400
 
         address_details = data.get('addressDetails')
@@ -283,15 +309,13 @@ def place_order():
         items = data.get('items')
         total_amount = data.get('totalAmount')
 
-        # Validate required data
         if not all([address_details, payment_method, items, total_amount]):
-            print("DEBUG: Missing required fields in request")  # Debug log
             return jsonify({"success": False, "error": "Missing required fields"}), 400
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # 2. Generate new orderID
+        # Generate new orderID
         cursor.execute("SELECT orderID FROM Orders ORDER BY orderID DESC LIMIT 1")
         last_order = cursor.fetchone()
         if last_order:
@@ -300,24 +324,18 @@ def place_order():
         else:
             new_order_id = "O001"
 
-        print(f"DEBUG: Generated order ID: {new_order_id}")  # Debug log
-
-        # 3. Insert into Orders
+        # Insert into Orders
         today = datetime.now().strftime('%Y-%m-%d')
         cursor.execute(
             "INSERT INTO Orders (orderID, date, totalPrice, userID) VALUES (%s, %s, %s, %s)",
             (new_order_id, today, total_amount, user_id)
         )
-        print("DEBUG: Order record created")  # Debug log
 
-        # 4. Handle address - first check if exists, then update or insert
-        cursor.execute(
-            "SELECT * FROM Address WHERE userID = %s", (user_id,)
-        )
+        # Handle address
+        cursor.execute("SELECT * FROM Address WHERE userID = %s", (user_id,))
         existing_address = cursor.fetchone()
         
         if existing_address:
-            # Update existing address
             cursor.execute(
                 """UPDATE Address 
                 SET houseNo = %s, streetName = %s, city = %s, state = %s, pin = %s
@@ -325,31 +343,25 @@ def place_order():
                 (address_details['houseNo'], address_details['streetName'],
                  address_details['city'], address_details['state'], 
                  address_details['pin'], user_id))
-            print("DEBUG: Address record updated")
         else:
-            # Insert new address
             cursor.execute(
                 """INSERT INTO Address (userID, houseNo, streetName, city, state, pin)
                 VALUES (%s, %s, %s, %s, %s, %s)""",
                 (user_id, address_details['houseNo'], address_details['streetName'],
                  address_details['city'], address_details['state'], address_details['pin'])
             )
-            print("DEBUG: Address record created")
 
-        # 5. Insert order items
+        # Insert order items with their final selling prices
         for item in items:
             cursor.execute(
                 "INSERT INTO Contains (orderID, productID, productQuantity) VALUES (%s, %s, %s)",
                 (new_order_id, item['productID'], item['quantity'])
             )
-        print(f"DEBUG: Added {len(items)} items to order")  # Debug log
 
-        # 6. Clear cart
+        # Clear cart
         cursor.execute("DELETE FROM Cart WHERE userID = %s", (user_id,))
-        print("DEBUG: Cart cleared")  # Debug log
         
         conn.commit()
-        print("DEBUG: Transaction committed successfully")  # Debug log
         return jsonify({
             'success': True,
             'message': 'Order placed successfully!',
@@ -357,12 +369,10 @@ def place_order():
         })
 
     except mysql.connector.Error as err:
-        print(f"DEBUG: Database error: {err}")  # Debug log
         if conn:
             conn.rollback()
         return jsonify({'success': False, 'error': 'Database error', 'details': str(err)}), 500
     except Exception as e:
-        print(f"DEBUG: Unexpected error: {e}")  # Debug log
         if conn:
             conn.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -373,16 +383,14 @@ def place_order():
 
 @product_blueprint.route("/orders/history", methods=["GET", "OPTIONS"])
 def get_order_history():
-    print("DEBUG: /orders/history endpoint hit")  # Debug log
     try:
         user_id = get_logged_in_user()
         if not user_id:
-            print("DEBUG: User not logged in")  # Debug log
             return jsonify({"success": False, "error": "User not logged in"}), 401
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        print(f"DEBUG: Fetching orders for user {user_id}")  # Debug lo
+
         # Get order history with address details
         cursor.execute("""
             SELECT o.orderID, o.date, o.totalPrice, 
@@ -394,12 +402,23 @@ def get_order_history():
         """, (user_id,))
         orders = cursor.fetchall()
 
-        # Get order items for each order
+        # Get order items for each order with current discounted prices
         for order in orders:
             cursor.execute("""
-                SELECT c.productID, c.productQuantity, p.pName, p.price, p.unit
+                SELECT 
+                    c.productID, 
+                    c.productQuantity, 
+                    p.pName, 
+                    p.unit,
+                    CASE 
+                        WHEN d.discountPercentage IS NOT NULL AND CURDATE() BETWEEN d.startDate AND d.endDate 
+                        THEN ROUND(p.price * (1 - d.discountPercentage/100))
+                        ELSE p.price
+                    END as price
                 FROM Contains c
                 JOIN Product p ON c.productID = p.productID
+                LEFT JOIN Discount d ON p.productID = d.productID
+                    AND CURDATE() BETWEEN d.startDate AND d.endDate
                 WHERE c.orderID = %s
             """, (order['orderID'],))
             order['items'] = cursor.fetchall()

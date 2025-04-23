@@ -667,3 +667,88 @@ nav img:hover{
   .product-price {
     color: rgb(255, 140, 0);
   }
+
+/* Discount styles */
+.discount-corner {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #ff4444;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .discount-badge {
+    background: #ffeb3b;
+    color: #333;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    margin-left: 5px;
+  }
+  
+  .original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 5px;
+  }
+  
+  .discounted-price {
+    color: #e53935;
+    font-weight: bold;
+  }
+
+/* Add these styles to your customer.css */
+.address-display {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.no-address {
+    color: #666;
+    font-style: italic;
+}
+
+.address-actions, .form-actions, .payment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.confirm-btn, .save-btn, .submit-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cancel-btn, .back-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Modal step transitions */
+.modal-content > div {
+    transition: all 0.3s ease;
+}
