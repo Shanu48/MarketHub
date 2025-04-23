@@ -81,20 +81,29 @@
     }
 
     function showProductModal(product) {
-      const modal = document.getElementById("product-modal");
-      const modalContent = document.getElementById("modal-content");
-      const imagePath = `images/${formatImageName(product.pName)}`;
+  const modal = document.getElementById("product-modal");
+  const modalContent = document.getElementById("modal-content");
+  const imagePath = `images/${formatImageName(product.pName)}`;
 
-      modalContent.innerHTML = `
-        <h2>${product.pName}</h2>
-        <img src="${imagePath}" alt="${product.pName}" style="max-width: 100%; height: auto; border-radius: 8px;">
-        <p>${product.description}</p>
-        <p style="color: rgb(255, 140, 0);"><strong>Price:</strong> ₹${product.price}/${product.unit}</p>
-        <p><strong>Category:</strong> ${product.categoryName}</p>
-        <p><strong>Supplier:</strong> ${product.sName}</p>
-      `;
-      modal.classList.remove("hidden");
-    }
+  // Price display for modal
+  const modalPriceDisplay = product.discountPercentage
+    ? `<p class="product-price">
+         <span class="original-price">₹${product.originalPrice}</span>
+         <span class="discounted-price">₹${product.sellingPrice}/${product.unit}</span>
+         <br><small>(${product.discountPercentage}% discount)</small>
+       </p>`
+    : `<p class="product-price">₹${product.sellingPrice}/${product.unit}</p>`;
+
+  modalContent.innerHTML = `
+    <h2>${product.pName}</h2>
+    <img src="${imagePath}" alt="${product.pName}" style="max-width: 100%; height: auto; border-radius: 8px;">
+    <p>${product.description}</p>
+    ${modalPriceDisplay}
+    <p><strong>Category:</strong> ${product.categoryName}</p>
+    <p><strong>Supplier:</strong> ${product.sName}</p>
+  `;
+  modal.classList.remove("hidden");
+}
 
     function closeProductModal() {
       document.getElementById("product-modal").classList.add("hidden");
@@ -106,39 +115,47 @@
     });
 
     function displayProducts(products) {
-      const container = document.getElementById("product-rows");
-      container.innerHTML = "";
+  const container = document.getElementById("product-rows");
+  container.innerHTML = "";
 
-      products.forEach(product => {
-        const row = document.createElement("div");
-        row.className = "product-row";
-        row.setAttribute("data-product-id", product.productID);
+  products.forEach(product => {
+    const row = document.createElement("div");
+    row.className = "product-row";
+    row.setAttribute("data-product-id", product.productID);
 
-        const imagePath = `images/${formatImageName(product.pName)}`;
+    const imagePath = `images/${formatImageName(product.pName)}`;
 
-        row.innerHTML = `
-          <div class="product-card">
-            <img src="${imagePath}" alt="${product.pName}" class="product-image" />
-            <h3 class="product-name">${product.pName}</h3>
-            <p class="product-description">${product.description}</p>
-            <p class="product-price" style="color: rgb(255, 140, 0);">₹${product.price}/${product.unit}</p>
-            <p class="product-category">${product.categoryName}</p>
-            <p class="product-supplier">${product.sName}</p>
-            <div class="product-actions">
-              <button class="add-cart-btn" data-product-id="${product.productID}" onclick="addToCart('${product.productID}')">Add to Cart</button>
-            </div>
-          </div>
-        `;
+    // Price display logic
+    const priceDisplay = product.discountPercentage
+      ? `<p class="product-price">
+           <span class="original-price">₹${product.originalPrice}</span>
+           <span class="discounted-price">₹${product.sellingPrice}/${product.unit}</span>
+         </p>`
+      : `<p class="product-price">₹${product.sellingPrice}/${product.unit}</p>`;
 
-        row.querySelector(".product-card").addEventListener("click", (e) => {
-          if (!e.target.classList.contains("add-cart-btn")) {
-            showProductModal(product);
-          }
-        });
+    row.innerHTML = `
+      <div class="product-card">
+        <img src="${imagePath}" alt="${product.pName}" class="product-image" />
+        <h3 class="product-name">${product.pName}</h3>
+        <p class="product-description">${product.description}</p>
+        ${priceDisplay}
+        <p class="product-category">${product.categoryName}</p>
+        <p class="product-supplier">${product.sName}</p>
+        <div class="product-actions">
+          <button class="add-cart-btn" data-product-id="${product.productID}" onclick="addToCart('${product.productID}')">Add to Cart</button>
+        </div>
+      </div>
+    `;
 
-        container.appendChild(row);
-      });
-    }
+    row.querySelector(".product-card").addEventListener("click", (e) => {
+      if (!e.target.classList.contains("add-cart-btn")) {
+        showProductModal(product);
+      }
+    });
+
+    container.appendChild(row);
+  });
+}
 
     function addToCart(productID) {
       fetch("http://127.0.0.1:5000/cart/add", {
@@ -223,27 +240,30 @@
     }
 
     function updateProductRows(cartItems) {
-      const cartMap = {};
-      cartItems.forEach(item => cartMap[item.productID] = item.quantity);
+  const cartMap = {};
+  cartItems.forEach(item => cartMap[item.productID] = item);
 
-      document.querySelectorAll('.product-row').forEach(row => {
-        const productID = row.dataset.productId;
-        const quantity = cartMap[productID];
+  document.querySelectorAll('.product-row').forEach(row => {
+    const productID = row.dataset.productId;
+    const cartItem = cartMap[productID];
 
-        if (quantity) {
-          const actionCol = row.querySelector('.product-actions');
-          if (actionCol) {
-            actionCol.innerHTML = `
-              <div class="quantity-controls" data-product-id="${productID}">
-                <button class="qty-btn minus" onclick="updateCart('${productID}', -1)">-</button>
-                <span class="qty-value">${quantity}</span>
-                <button class="qty-btn plus" onclick="updateCart('${productID}', 1)">+</button>
-              </div>
-            `;
-          }
-        }
-      });
+    if (cartItem) {
+      const actionCol = row.querySelector('.product-actions');
+      if (actionCol) {
+        // Get the price display from the row
+        const priceDisplay = row.querySelector('.product-price');
+        
+        actionCol.innerHTML = `
+          <div class="quantity-controls" data-product-id="${productID}">
+            <button class="qty-btn minus" onclick="updateCart('${productID}', -1)">-</button>
+            <span class="qty-value">${cartItem.quantity}</span>
+            <button class="qty-btn plus" onclick="updateCart('${productID}', 1)">+</button>
+          </div>
+        `;
+      }
     }
+  });
+}
 
     function applyFilters() {
       let filtered = [...allProducts];

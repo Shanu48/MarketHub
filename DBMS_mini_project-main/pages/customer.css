@@ -623,3 +623,47 @@ nav img:hover{
     display: flex;
     justify-content: space-around;
 }
+
+/* Discount badge styling */
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff5722;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  /* Original price styling (for discounted items) */
+  .original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 8px;
+  }
+  
+  /* Product card needs relative positioning for badge */
+  .product-card {
+    position: relative;
+    /* ... your existing product-card styles ... */
+  }
+
+
+  /* Original price with strikethrough */
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 8px;
+  }
+  
+  /* Discounted price color */
+  .discounted-price {
+    color: rgb(255, 140, 0);
+  }
+  
+  /* Regular price color */
+  .product-price {
+    color: rgb(255, 140, 0);
+  }

@@ -26,10 +26,25 @@ def get_products():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = """
-        SELECT p.productID, p.pName, p.description, p.price, p.unit, c.categoryName, s.sName
+        SELECT 
+            p.productID, 
+            p.pName, 
+            p.description, 
+            p.price as originalPrice,
+            CASE 
+                WHEN d.discountPercentage IS NOT NULL AND CURDATE() BETWEEN d.startDate AND d.endDate 
+                THEN ROUND(p.price * (1 - d.discountPercentage/100))
+                ELSE p.price
+            END as sellingPrice,
+            p.unit, 
+            c.categoryName, 
+            s.sName,
+            d.discountPercentage
         FROM Product p
         JOIN Category c ON p.categoryName = c.categoryName
-        JOIN Supplier s ON p.userID = s.userID;
+        JOIN Supplier s ON p.userID = s.userID
+        LEFT JOIN Discount d ON p.productID = d.productID
+            AND CURDATE() BETWEEN d.startDate AND d.endDate
         """
     cursor.execute(query)
     products = cursor.fetchall()
@@ -165,9 +180,17 @@ def get_cart_items():
         cursor = conn.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT c.productID, c.quantity, p.pName, p.description, p.price, p.unit
+            SELECT c.productID, c.quantity, p.pName, p.description, 
+                CASE 
+                    WHEN d.discountPercentage IS NOT NULL AND CURDATE() BETWEEN d.startDate AND d.endDate 
+                    THEN ROUND(p.price * (1 - d.discountPercentage/100))
+                    ELSE p.price
+                END as price,
+                p.unit
             FROM Cart c
             JOIN Product p ON c.productID = p.productID
+            LEFT JOIN Discount d ON p.productID = d.productID
+                AND CURDATE() BETWEEN d.startDate AND d.endDate
             WHERE c.userID = %s
         """, (user_id,))
 
