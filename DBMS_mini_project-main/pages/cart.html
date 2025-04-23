@@ -215,31 +215,30 @@
     }
 
     // Function to remove item from cart
-    function removeFromCart(productID) {
-        if (!confirm("Are you sure you want to remove this item from your cart?")) return;
-        
-        fetch("http://127.0.0.1:5000/cart/clear", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productID })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                // Remove the item from the DOM
-                document.querySelector(`.cart-item[data-product-id="${productID}"]`)?.remove();
-                // Reload cart to update totals
-                loadCartItems();
-            } else {
-                alert(data.error || 'Failed to remove item');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to remove item');
-        });
-    }
-
+function removeFromCart(productID) {
+    if (!confirm("Are you sure you want to remove this item from your cart?")) return;
+    
+    fetch("http://127.0.0.1:5000/cart/remove", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productID })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the item from the DOM
+            document.querySelector(`.cart-item[data-product-id="${productID}"]`)?.remove();
+            // Reload cart to update totals
+            loadCartItems();
+        } else {
+            alert(data.error || 'Failed to remove item');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to remove item');
+    });
+}
     // Checkout functionality
     document.getElementById("checkout-btn").addEventListener("click", function() {
         document.getElementById("checkout-modal").style.display = "block";
