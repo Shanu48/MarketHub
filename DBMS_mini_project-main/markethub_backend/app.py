@@ -19,12 +19,11 @@ app = Flask(__name__)
 app.secret_key = "Shanu@04082005"
 
 # Enable CORS
+# Apply CORS to all routes
 CORS(app, resources={
-    r"/api/*": {
+    r"/*": {
         "origins": ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:5501"],
-        "supports_credentials": True,
-        "methods": ["GET", "POST", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
+        "supports_credentials": True
     }
 })
 
