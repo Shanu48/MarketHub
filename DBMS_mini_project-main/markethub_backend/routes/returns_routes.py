@@ -10,13 +10,7 @@ logger = logging.getLogger(__name__)
 
 returns_blueprint = Blueprint("returns", __name__)
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="Aditi",
-        password="Aditi@0830",
-        database="MarketHub"
-    )
+from db import get_db_connection
 
 from flask import make_response
 
