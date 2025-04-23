@@ -5,6 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supplier Dashboard</title>
     <link rel="stylesheet" href="supplier.css">
+    <style>
+        .tabcontent {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+        .tab button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .tab button.active {
+            background-color: #ddd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+    </style>
 </head>
 <body style="background-color: white;">
     <header>
@@ -22,56 +61,108 @@
 
     <main>
         <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'Tab1')">Add Product</button>
-            <button class="tablinks" onclick="openTab(event, 'Tab2')">View Products</button>
+            <button class="tablinks" onclick="openTab(event, 'addProduct')">Add Product</button>
+            <button class="tablinks" onclick="openTab(event, 'viewProducts')">View Products</button>
+            <button class="tablinks" onclick="openTab(event, 'updateStock')">Update Stock</button>
+            <button class="tablinks" onclick="openTab(event, 'viewStock')">View Stock</button>
         </div>
 
-        <div id="Tab1" class="tabcontent">
-            <h2 style="color: rgb(4, 93, 82);">Supply Product</h2>
+        <!-- Add Product Tab -->
+        <div id="addProduct" class="tabcontent">
+            <h2>Add New Product</h2>
             <form id="productForm">
-                <label for="pName">Product Name:</label>
-                <input type="text" id="pName" name="pName" required>
-
-                <label for="description">Description:</label>
-                <input type="text" id="description" name="description" required>
-
-                <label for="price">Price:</label>
-                <input type="number" id="price" name="price" required>
-
-                <label for="unit">Unit:</label>
-                <input type="text" id="unit" name="unit" required>
-
-                <label for="categoryName">Category:</label>
-                <select id="categoryName" name="categoryName" required>
-                    <option value="">Select a category</option>
-                </select>
-
-                <label for="expiryDate">Expiry Date:</label>
-                <input type="date" id="expiryDate" name="expiryDate">
-
-                <label for="warehouseID">Warehouse ID:</label>
-                <select id="warehouseID" name="warehouseID" required>
-                    <option value="">Select a warehouse</option>
-                </select>
-
-                <label for="quantity">Quantity:</label>
-                <input type="number" id="quantity" name="quantity" required>
-
+                <div class="form-group">
+                    <label for="pName">Product Name:</label>
+                    <input type="text" id="pName" name="pName" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <input type="text" id="description" name="description" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price:</label>
+                    <input type="number" id="price" name="price" required>
+                </div>
+                <div class="form-group">
+                    <label for="unit">Unit:</label>
+                    <input type="text" id="unit" name="unit" required>
+                </div>
+                <div class="form-group">
+                    <label for="categoryName">Category:</label>
+                    <select id="categoryName" name="categoryName" required>
+                        <option value="">Select a category</option>
+                    </select>
+                </div>
                 <button type="submit">Add Product</button>
             </form>
         </div>
 
-        <div id="Tab2" class="tabcontent">
-            <h2 style="color: rgb(4, 93, 82);">Your Products</h2>
-            <div id="productList">Loading products...</div>
+        <!-- View Products Tab -->
+        <div id="viewProducts" class="tabcontent">
+            <h2>Your Products</h2>
+            <div id="productList"></div>
+        </div>
+
+        <!-- Update Stock Tab -->
+        <div id="updateStock" class="tabcontent">
+            <h2>Update Stock</h2>
+            <form id="stockForm">
+                <div class="form-group">
+                    <label for="stockProduct">Product:</label>
+                    <select id="stockProduct" name="productID" required>
+                        <option value="">Select a product</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="stockWarehouse">Warehouse:</label>
+                    <select id="stockWarehouse" name="warehouseID" required>
+                        <option value="">Select a warehouse</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" name="quantity" required>
+                </div>
+                <div class="form-group">
+                    <label for="expiryDate">Expiry Date:</label>
+                    <input type="date" id="expiryDate" name="expiryDate">
+                </div>
+                <div class="form-group">
+                    <label for="discountPercentage">Discount Percentage:</label>
+                    <input type="number" id="discountPercentage" name="discountPercentage" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label for="startDate">Discount Start Date:</label>
+                    <input type="date" id="startDate" name="startDate">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">Discount End Date:</label>
+                    <input type="date" id="endDate" name="endDate">
+                </div>
+                <button type="submit">Update Stock</button>
+            </form>
+        </div>
+
+        <!-- View Stock Tab -->
+        <div id="viewStock" class="tabcontent">
+            <h2>Current Stock</h2>
+            <div id="stockList"></div>
         </div>
     </main>
 
     <script>
+        // Initialize when DOM is loaded
         document.addEventListener("DOMContentLoaded", function() {
+            // Open first tab by default
             document.querySelector(".tablinks").click();
+            
+            // Load initial data
+            fetchCategories();
+            fetchSupplierProducts();
+            fetchWarehouses();
         });
 
+        // Tab functionality
         function openTab(evt, tabName) {
             var i, tabcontent, tablinks;
 
@@ -87,8 +178,16 @@
 
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
+
+            // Load specific data when tabs are opened
+            if (tabName === 'viewStock') {
+                fetchStockDetails();
+            } else if (tabName === 'updateStock') {
+                fetchSupplierProductsForDropdown();
+            }
         }
 
+        // Fetch categories for dropdown
         async function fetchCategories() {
             try {
                 const response = await fetch("http://localhost:5000/get_categories");
@@ -106,116 +205,196 @@
             }
         }
 
-        async function fetchWarehouses() {
-            try {
-                const response = await fetch("http://localhost:5000/get_warehouses");
-                const warehouses = await response.json();
-                const warehouseSelect = document.getElementById("warehouseID");
+        // Fetch warehouses for dropdown
+        // Update the fetchWarehouses function to show all warehouses
+async function fetchWarehouses() {
+    try {
+        const response = await fetch("http://localhost:5000/get_all_warehouses");
+        const warehouses = await response.json();
+        const warehouseSelect = document.getElementById("stockWarehouse");
 
-                warehouses.forEach(w => {
-                    const option = document.createElement("option");
-                    option.value = w.warehouseID;
-                    option.textContent = `${w.warehouseID} - ${w.location}`;
-                    warehouseSelect.appendChild(option);
-                });
-            } catch (error) {
-                console.error("Error loading warehouses:", error);
-            }
+        // Clear existing options except the first one
+        while (warehouseSelect.options.length > 1) {
+            warehouseSelect.remove(1);
         }
 
+        warehouses.forEach(warehouse => {
+            const option = document.createElement("option");
+            option.value = warehouse.warehouseID;
+            option.textContent = `${warehouse.warehouseID} - ${warehouse.location}`;
+            warehouseSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error loading warehouses:", error);
+    }
+}
+
+        // Fetch supplier's products for display
         async function fetchSupplierProducts() {
             try {
-                const response = await fetch("http://localhost:5000/get_supplier_products");
+                const response = await fetch("http://localhost:5000/my_products");
                 const products = await response.json();
-                console.log("API Response:", products); // Debug log
-
                 const container = document.getElementById("productList");
 
                 if (!products || products.length === 0) {
-                    container.textContent = "No products added yet.";
+                    container.innerHTML = "<p>No products found</p>";
                     return;
                 }
 
                 let html = `
-        <table class="product-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Unit</th>
-                    <th>Category</th>
-                    <th>Warehouses</th>
-                    <th>Stock</th>
-                    <th>Discount</th>
-                    <th>Expiry</th>
-                </tr>
-            </thead>
-            <tbody>`;
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Price</th>
+                                <th>Unit</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
 
                 products.forEach(product => {
-            // Debug each product
-            console.log("Processing product:", product);
-            
-            html += `
-            <tr>
-                <td>${product.productID || '-'}</td>
-                <td>${product.pName || '-'}</td>
-                <td>${product.price ? '₹' + product.price : '0'}</td>
-                <td>${product.unit || '-'}</td>
-                <td>${product.categoryName || '-'}</td>
-                <td>${product.warehouseLocations || 'Not in warehouse'}</td>
-                <td>${product.totalQuantity !== undefined ? product.totalQuantity : '0'}</td>
-                <td>${product.discountPercentage ? product.discountPercentage + '%' : 'None'}</td>
-                <td>${product.expiryDate ? new Date(product.expiryDate).toISOString().split('T')[0] : '-'}</td>
-            </tr>`;
-        });
-
-html += "</tbody></table>";
-container.innerHTML = html;
-            } catch (error) {
-        console.error("Error loading products:", error);
-        document.getElementById("productList").innerHTML = `
-            <p class="error">Error loading products: ${error.message}</p>
-            <p>Check console for details</p>`;
-    }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            fetchCategories();
-            fetchWarehouses();
-            fetchSupplierProducts();
-        });
-
-        document.getElementById("productForm").addEventListener("submit", async function (event) {
-            event.preventDefault();
-
-            const data = {
-                pName: document.getElementById("pName").value,
-                description: document.getElementById("description").value,
-                price: document.getElementById("price").value,
-                unit: document.getElementById("unit").value,
-                categoryName: document.getElementById("categoryName").value,
-                expiryDate: document.getElementById("expiryDate").value,
-                warehouseID: document.getElementById("warehouseID").value,
-                quantity: document.getElementById("quantity").value
-            };
-
-            try {
-                const response = await fetch('http://localhost:5000/add_product', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    html += `
+                        <tr>
+                            <td>${product.productID}</td>
+                            <td>${product.pName}</td>
+                            <td>${product.description}</td>
+                            <td>₹${product.price}</td>
+                            <td>${product.unit}</td>
+                            <td>${product.categoryName}</td>
+                        </tr>`;
                 });
 
-                const result = await response.json();
-                alert("Product added successfully!");
-                fetchSupplierProducts();
-                document.getElementById("productForm").reset();
+                html += "</tbody></table>";
+                container.innerHTML = html;
             } catch (error) {
-                alert("Error: " + error.message);
+                console.error("Error loading products:", error);
+                document.getElementById("productList").innerHTML = 
+                    "<p class='error'>Error loading products. Please try again.</p>";
             }
+        }
+
+        // Fetch supplier's products for dropdown in update stock
+        async function fetchSupplierProductsForDropdown() {
+            try {
+                const response = await fetch("http://localhost:5000/my_products");
+                const products = await response.json();
+                const productSelect = document.getElementById("stockProduct");
+
+                // Clear existing options except the first one
+                while (productSelect.options.length > 1) {
+                    productSelect.remove(1);
+                }
+
+                if (products && products.length > 0) {
+                    products.forEach(product => {
+                        const option = document.createElement("option");
+                        option.value = product.productID;
+                        option.textContent = `${product.productID} - ${product.pName}`;
+                        productSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading products for dropdown:", error);
+            }
+        }
+
+        // Fetch stock details for display
+        // Update the fetchStockDetails function
+async function fetchStockDetails() {
+    try {
+        const response = await fetch("http://localhost:5000/get_stock_details");
+        const stockData = await response.json();
+        const container = document.getElementById("stockList");
+
+        if (!stockData || stockData.length === 0) {
+            container.innerHTML = "<p>No stock information available</p>";
+            return;
+        }
+
+        let html = `
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>Warehouse</th>
+                        <th>Quantity</th>
+                        <th>Expiry Date</th>
+                        <th>Discount</th>
+                        <th>Discount Period</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        stockData.forEach(item => {
+            const discountInfo = item.discountPercentage ? 
+                `${item.discountPercentage}%` : "None";
+            
+            const discountPeriod = item.startDate && item.endDate ?
+                `${new Date(item.startDate).toLocaleDateString()} to ${new Date(item.endDate).toLocaleDateString()}` : 
+                "N/A";
+
+            const expiryDate = item.expiryDate ? 
+                new Date(item.expiryDate).toLocaleDateString() : 'N/A';
+
+            html += `
+                <tr>
+                    <td>${item.productID}</td>
+                    <td>${item.pName}</td>
+                    <td>${item.location}</td>
+                    <td>${item.productQuantity}</td>
+                    <td>${expiryDate}</td>
+                    <td>${discountInfo}</td>
+                    <td>${discountPeriod}</td>
+                </tr>`;
         });
+
+        html += "</tbody></table>";
+        container.innerHTML = html;
+    } catch (error) {
+        console.error("Error loading stock details:", error);
+        document.getElementById("stockList").innerHTML = 
+            `<p class="error">Error loading stock: ${error.message}</p>`;
+    }
+}
+
+// Update the stock form submission handler
+document.getElementById("stockForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        productID: document.getElementById("stockProduct").value,
+        warehouseID: document.getElementById("stockWarehouse").value,
+        quantity: document.getElementById("quantity").value,
+        expiryDate: document.getElementById("expiryDate").value || null,
+        discountPercentage: document.getElementById("discountPercentage").value || null,
+        startDate: document.getElementById("startDate").value || null,
+        endDate: document.getElementById("endDate").value || null
+    };
+
+    try {
+        const response = await fetch('http://localhost:5000/update_stock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error || "Failed to update stock");
+        }
+
+        alert("Stock updated successfully!");
+        document.getElementById("stockForm").reset();
+        fetchStockDetails();
+    } catch (error) {
+        alert("Error updating stock: " + error.message);
+        console.error("Update stock error:", error);
+    }
+});
     </script>
 </body>
 </html>
