@@ -304,12 +304,11 @@ def place_order():
         if not data:
             return jsonify({"success": False, "error": "No data received"}), 400
 
-        address_details = data.get('addressDetails')
         payment_method = data.get('paymentMethod')
         items = data.get('items')
         total_amount = data.get('totalAmount')
 
-        if not all([address_details, payment_method, items, total_amount]):
+        if not all([payment_method, items, total_amount]):
             return jsonify({"success": False, "error": "Missing required fields"}), 400
 
         conn = get_db_connection()
@@ -335,22 +334,6 @@ def place_order():
         cursor.execute("SELECT * FROM Address WHERE userID = %s", (user_id,))
         existing_address = cursor.fetchone()
         
-        if existing_address:
-            cursor.execute(
-                """UPDATE Address 
-                SET houseNo = %s, streetName = %s, city = %s, state = %s, pin = %s
-                WHERE userID = %s""",
-                (address_details['houseNo'], address_details['streetName'],
-                 address_details['city'], address_details['state'], 
-                 address_details['pin'], user_id))
-        else:
-            cursor.execute(
-                """INSERT INTO Address (userID, houseNo, streetName, city, state, pin)
-                VALUES (%s, %s, %s, %s, %s, %s)""",
-                (user_id, address_details['houseNo'], address_details['streetName'],
-                 address_details['city'], address_details['state'], address_details['pin'])
-            )
-
         # Insert order items with their final selling prices
         for item in items:
             cursor.execute(
