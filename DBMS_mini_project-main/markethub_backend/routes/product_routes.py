@@ -381,7 +381,7 @@ def get_order_history():
             FROM Orders o
             LEFT JOIN Address a ON o.userID = a.userID
             WHERE o.userID = %s
-            ORDER BY o.date DESC
+            ORDER BY o.orderID DESC
         """, (user_id,))
         orders = cursor.fetchall()
 
