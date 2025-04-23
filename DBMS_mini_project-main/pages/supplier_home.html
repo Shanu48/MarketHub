@@ -395,6 +395,35 @@ document.getElementById("stockForm").addEventListener("submit", async function(e
         console.error("Update stock error:", error);
     }
 });
+async function assignTransport(orderId) {
+    if (!confirm("Are you sure you want to assign transport to this order?")) {
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:5000/assign_transport", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                orderID: orderId
+            })
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.error || "Failed to assign transport");
+        }
+
+        alert(`Transport ${result.transportID} assigned successfully!`);
+        loadOrders(); // Refresh the order list
+    } catch (error) {
+        console.error("Transport assignment error:", error);
+        alert(`Error: ${error.message}`);
+    }
+}
     </script>
 </body>
 </html>

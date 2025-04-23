@@ -359,3 +359,278 @@ def get_stock_details():
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+@supplier_bp.route('/get_pending_orders', methods=['GET'])
+def get_pending_orders():
+    conn = None
+    cursor = None
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get all orders containing products from this supplier
+        cursor.execute("""
+            SELECT o.orderID, o.date, o.totalPrice, c.cName,
+                   SUM(CASE WHEN f.productID IS NULL THEN 0 ELSE 1 END) as confirmed_count,
+                   COUNT(*) as total_products
+            FROM Orders o
+            JOIN Customer c ON o.userID = c.userID
+            JOIN Contains co ON o.orderID = co.orderID
+            JOIN Product p ON co.productID = p.productID
+            LEFT JOIN Fulfill f ON o.orderID = f.orderID AND co.productID = f.productID
+            WHERE p.userID = %s
+            GROUP BY o.orderID, o.date, o.totalPrice, c.cName
+            HAVING confirmed_count < total_products OR confirmed_count = 0
+        """, (user_id,))
+        
+        orders = cursor.fetchall()
+        
+        order_details = []
+        for order in orders:
+            # Get all products in this order from this supplier
+            cursor.execute("""
+                SELECT p.productID, p.pName, co.productQuantity, 
+                       CASE WHEN f.productID IS NULL THEN FALSE ELSE TRUE END as confirmed
+                FROM Contains co
+                JOIN Product p ON co.productID = p.productID
+                LEFT JOIN Fulfill f ON co.orderID = f.orderID AND co.productID = f.productID
+                WHERE co.orderID = %s AND p.userID = %s
+            """, (order['orderID'], user_id))
+            
+            products = cursor.fetchall()
+            
+            all_confirmed = all(p['confirmed'] for p in products)
+            
+            order_details.append({
+                "orderID": order['orderID'],
+                "date": order['date'],
+                "totalPrice": order['totalPrice'],
+                "cName": order['cName'],
+                "products": products,
+                "allConfirmed": all_confirmed
+            })
+
+        return jsonify(order_details)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+@supplier_bp.route('/confirm_product', methods=['POST'])
+def confirm_product():
+    conn = None
+    cursor = None
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
+
+        data = request.json
+        if not data.get('orderID') or not data.get('productID'):
+            return jsonify({"error": "Missing orderID or productID"}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # 1. Verify the product belongs to this supplier
+        cursor.execute("""
+            SELECT p.productID 
+            FROM Product p
+            WHERE p.productID = %s AND p.userID = %s
+        """, (data['productID'], user_id))
+        if not cursor.fetchone():
+            return jsonify({"error": "Product does not belong to you"}), 403
+
+        # 2. Find a warehouse with sufficient stock
+        cursor.execute("""
+            SELECT s.warehouseID, s.productQuantity
+            FROM Storage s
+            JOIN Supplies sp ON s.warehouseID = sp.warehouseID
+            WHERE s.productID = %s AND sp.userID = %s
+        """, (data['productID'], user_id))
+        
+        warehouses = cursor.fetchall()
+        
+        # Get the required quantity from the order
+        cursor.execute("""
+            SELECT productQuantity 
+            FROM Contains 
+            WHERE orderID = %s AND productID = %s
+        """, (data['orderID'], data['productID']))
+        
+        required_quantity = cursor.fetchone()['productQuantity']
+        
+        # Find a warehouse with sufficient stock
+        warehouse_id = None
+        for warehouse in warehouses:
+            if warehouse['productQuantity'] >= required_quantity:
+                warehouse_id = warehouse['warehouseID']
+                break
+        
+        if not warehouse_id:
+            return jsonify({"error": "Insufficient stock in any warehouse"}), 400
+
+        # 3. Update the Fulfill table
+        cursor.execute("""
+            INSERT INTO Fulfill (warehouseID, orderID, productID)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE warehouseID = VALUES(warehouseID)
+        """, (warehouse_id, data['orderID'], data['productID']))
+
+        # 4. Reduce the stock in the warehouse
+        cursor.execute("""
+            UPDATE Storage
+            SET productQuantity = productQuantity - %s
+            WHERE warehouseID = %s AND productID = %s
+        """, (required_quantity, warehouse_id, data['productID']))
+
+        conn.commit()
+        return jsonify({"success": True, "message": "Product confirmed successfully"})
+    except mysql.connector.Error as err:
+        if conn: conn.rollback()
+        return jsonify({"error": f"Database error: {err}"}), 500
+    except Exception as e:
+        if conn: conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+@supplier_bp.route('/assign_transport', methods=['POST'])
+def assign_transport():
+    conn = None
+    cursor = None
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            return jsonify({"error": "User not logged in"}), 401
+
+        data = request.json
+        if not data.get('orderID'):
+            return jsonify({"error": "Missing orderID"}), 400
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # 1. Verify all products are confirmed
+        cursor.execute("""
+            SELECT co.productID, 
+                   CASE WHEN f.productID IS NULL THEN 0 ELSE 1 END as confirmed
+            FROM Contains co
+            JOIN Product p ON co.productID = p.productID
+            LEFT JOIN Fulfill f ON co.orderID = f.orderID AND co.productID = f.productID
+            WHERE co.orderID = %s AND p.userID = %s
+        """, (data['orderID'], user_id))
+        
+        products = cursor.fetchall()
+        
+        if not all(p['confirmed'] for p in products):
+            return jsonify({"error": "Not all products are confirmed"}), 400
+
+        # 2. Find an available transport
+        cursor.execute("""
+            SELECT transportID 
+            FROM Transport 
+            WHERE status = 'Available'
+            ORDER BY RAND() 
+            LIMIT 1
+        """)
+        
+        transport = cursor.fetchone()
+        
+        if not transport:
+            return jsonify({"error": "No available transports"}), 400
+
+        # 3. Assign the transport to the order
+        cursor.execute("""
+            UPDATE Transport
+            SET orderID = %s, status = 'Assigned'
+            WHERE transportID = %s
+        """, (data['orderID'], transport['transportID']))
+
+        # 4. Update order status (assuming you have a status column in Orders)
+        cursor.execute("""
+            UPDATE Orders
+            SET status = 'Processing'
+            WHERE orderID = %s
+        """, (data['orderID'],))
+
+        conn.commit()
+        return jsonify({
+            "success": True,
+            "message": "Transport assigned successfully",
+            "transportID": transport['transportID']
+        })
+    except mysql.connector.Error as err:
+        if conn: conn.rollback()
+        return jsonify({"error": f"Database error: {err}"}), 500
+    except Exception as e:
+        if conn: conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+@supplier_bp.route('/supplier_orders', methods=['GET'])
+def get_supplier_orders():
+    try:
+        user_id = get_logged_in_user()
+        if not user_id:
+            return jsonify({"error": "Not authenticated"}), 401
+
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get orders containing supplier's products
+        cursor.execute("""
+            SELECT o.orderID, o.date as orderDate, c.cName as customerName,
+                   p.productID, p.pName as productName, 
+                   co.productQuantity as quantity,
+                   IF(f.productID IS NULL, 0, 1) as confirmed
+            FROM Orders o
+            JOIN Customer c ON o.userID = c.userID
+            JOIN Contains co ON o.orderID = co.orderID
+            JOIN Product p ON co.productID = p.productID
+            LEFT JOIN Fulfill f ON o.orderID = f.orderID AND p.productID = f.productID
+            WHERE p.userID = %s
+            ORDER BY o.date DESC
+        """, (user_id,))
+        
+        orders_data = cursor.fetchall()
+        
+        # Group by order
+        orders = {}
+        for item in orders_data:
+            if item['orderID'] not in orders:
+                orders[item['orderID']] = {
+                    'orderID': item['orderID'],
+                    'orderDate': item['orderDate'],
+                    'customerName': item['customerName'],
+                    'products': [],
+                    'allConfirmed': True
+                }
+            
+            orders[item['orderID']]['products'].append({
+                'id': item['productID'],
+                'name': item['productName'],
+                'quantity': item['quantity'],
+                'confirmed': bool(item['confirmed'])
+            })
+            
+            if not item['confirmed']:
+                orders[item['orderID']]['allConfirmed'] = False
+        
+        return jsonify(list(orders.values()))
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
+# Use the same confirm_product and assign_transport endpoints from previous examples
