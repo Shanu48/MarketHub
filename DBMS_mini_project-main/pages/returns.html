@@ -392,57 +392,45 @@ function fetchReturnHistory() {
 }
 
 function renderReturnHistory(returns) {
-    const historyContainer = document.getElementById('historyContainer');
-    
-    if (!returns || returns.length === 0) {
-        historyContainer.innerHTML = '<div class="loading">You have no return requests yet.</div>';
-        return;
-    }
-    
-    let html = '';
-    returns.forEach(ret => {
-        const statusClass = `status-${ret.status.toLowerCase()}`;
-        const isResolved = ['approved', 'rejected', 'completed'].includes(ret.status.toLowerCase());
-        
-        html += `
-        <div class="return-card">
-            <div class="flex-row">
-                <div>
-                    <strong>Return #${ret.returnID}</strong><br>
-                    <small>Order #${ret.orderID} • ${new Date(ret.date).toLocaleDateString()}</small>
-                </div>
-                <div>
-                    <span class="status ${statusClass}">${ret.status}</span>
-                </div>
-            </div>
-            <div style="margin-top: 10px;">
-                <p><strong>Product:</strong> ${ret.product} (${ret.quantity || 1} ${ret.unit || 'unit'})</p>
-                <p><strong>Reason:</strong> ${ret.reason}</p>
-                ${ret.notes ? `<p><strong>Notes:</strong> ${ret.notes}</p>` : ''}
-            </div>
+            const historyContainer = document.getElementById('historyContainer');
             
-            ${ret.supplier_response ? `
-            <div class="response-section ${ret.status.toLowerCase() === 'rejected' ? 'rejected' : ''}">
-                <div class="flex-row">
-                    <strong>Supplier Response:</strong>
-                    ${ret.response_date ? `<small>${new Date(ret.response_date).toLocaleString()}</small>` : ''}
-                </div>
-                <p>${ret.supplier_response}</p>
-                ${ret.resolution_details ? `<p><strong>Resolution:</strong> ${ret.resolution_details}</p>` : ''}
-            </div>
-            ` : ''}
+            if (!returns || returns.length === 0) {
+                historyContainer.innerHTML = '<div class="loading">You have no return requests yet.</div>';
+                return;
+            }
             
-            ${!isResolved ? `
-            <div style="margin-top: 10px;">
+            let html = '';
+            returns.forEach(ret => {
+                const statusClass = `status-${ret.status.toLowerCase()}`;
                 
-            </div>
-            ` : ''}
-        </div>
-        `;
-    });
-    
-    historyContainer.innerHTML = html;
-}
+                html += `
+                <div class="return-card">
+                    <div class="flex-row">
+                        <div>
+                            <strong>Return #${ret.returnID}</strong><br>
+                            <small>Order #${ret.orderID} • ${ret.date}</small>
+                        </div>
+                        <div>
+                            <span class="status ${statusClass}">${ret.status}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <p><strong>Product:</strong> ${ret.product}</p>
+                        <p><strong>Reason:</strong> ${ret.reason}</p>
+                        ${ret.notes ? `<p><strong>Notes:</strong> ${ret.notes}</p>` : ''}
+                    </div>
+                    ${ret.supplier_response ? `
+<div class="response-section" style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 4px;">
+    <p><strong>Supplier Response:</strong> ${ret.supplier_response}</p>
+    ${ret.response_date ? `<small>Response Date: ${ret.response_date}</small>` : ''}
+</div>
+` : ''}
+                </div>
+                `;
+            });
+            
+            historyContainer.innerHTML = html;
+        }
 
 
 function handleResponse(response) {

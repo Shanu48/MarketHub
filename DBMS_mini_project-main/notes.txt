@@ -14,9 +14,9 @@ CUSTOMER-ALL DONE!!!
 
 
 SUPPLIER
-1.sup home-style again--ADITI
+{1.sup home-style again--ADITI
 2.book transport in order management--SHRAVANI
 3.update tables in Aditi's laptop--SHRAVANI
 4.display warhouse (name,location,image)--SHRAVANI, later styling--ADITI
 5.if stock=0, dont display
-6.manage complaints--SHRAVANI
+6.manage complaints--SHRAVANI}
