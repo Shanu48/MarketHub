@@ -142,7 +142,7 @@
         <p class="product-description">${product.description}</p>
         ${priceDisplay}
         <p class="product-category">${product.categoryName}</p>
-        <p class="product-supplier">${product.sName}</p>
+        <p class="product-supplier" style='color: gray; font-size: 10px'>Supplier: ${product.sName}</p>
         <div class="product-actions">
           <button class="add-cart-btn" data-product-id="${product.productID}" onclick="addToCart('${product.productID}')">Add to Cart</button>
         </div>

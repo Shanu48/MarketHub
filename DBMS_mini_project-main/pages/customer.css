@@ -104,7 +104,6 @@ header {
     position: fixed;
     width: 100%;
     z-index: 1000;
-    font-size: 26px;
 }
 
 nav {
@@ -624,35 +623,11 @@ nav img:hover{
     display: flex;
     justify-content: space-around;
 }
-
-/* Discount badge styling */
-.discount-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #ff5722;
-    color: white;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-  }
   
-  /* Original price styling (for discounted items) */
-  .original-price {
-    text-decoration: line-through;
-    color: #999;
-    margin-right: 8px;
-  }
-  
-  /* Product card needs relative positioning for badge */
   .product-card {
     position: relative;
-    /* ... your existing product-card styles ... */
   }
 
-
-  /* Original price with strikethrough */
 .original-price {
     text-decoration: line-through;
     color: #999;
@@ -674,7 +649,7 @@ nav img:hover{
     position: absolute;
     top: 10px;
     right: 10px;
-    background: #ff4444;
+    background: rgb(3, 107, 93);
     color: white;
     padding: 3px 8px;
     border-radius: 3px;
@@ -683,8 +658,8 @@ nav img:hover{
   }
   
   .discount-badge {
-    background: #ffeb3b;
-    color: #333;
+    background: #ffa659;
+    color: #ffffff;
     padding: 2px 5px;
     border-radius: 3px;
     font-size: 12px;
@@ -698,8 +673,7 @@ nav img:hover{
   }
   
   .discounted-price {
-    color: #e53935;
-    font-weight: bold;
+    color: #ff7700;
   }
 
 /* Add these styles to your customer.css */

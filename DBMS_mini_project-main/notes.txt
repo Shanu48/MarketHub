@@ -8,8 +8,9 @@ CUSTOMER
 5.+/- in cart-fix--SHRAVANI
 6.checkout pop-up align+design--ADITI
 7.orders-style--ADITI
-8.tracking not working--SHRAVANI
-9.returns too--SHRAVANI
+
+{8.tracking not working--SHRAVANI-DONEEE
+9.returns too--SHRAVANI-DONEEE}
 
 SUPPLIER
 1.sup home-style again--ADITI
