@@ -236,6 +236,16 @@ nav img:hover{
     }
 }
 
+.cart-item img{
+    width: 5vw;
+}
+
+.cart-item .col{
+    align-items: center;
+    justify-content: center;
+    display: inherit;
+}
+
 .search_n_filter {
     position: sticky;
     top: 60px;
@@ -417,16 +427,23 @@ nav img:hover{
   .modal.hidden {
     display: none;
   }
-  
+
   .modal-content {
     background: #fff;
     padding: 20px;
-    margin-top: 10vh;
     border-radius: 10px;
     max-width: 370px;
     width: 90%;
+    height: 50vh;
     animation: zoomIn 0.3s ease;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .submit-btn{
+    margin-left: 8vw;
+    margin-top: 10vh;
+    text-align: center;
+    background-color: rgb(4, 149, 130);
   }
   
   @keyframes zoomIn {
@@ -696,8 +713,11 @@ nav img:hover{
     margin-top: 20px;
 }
 
+.close{
+    cursor: pointer;
+    font-size: 20px;
+}
 .confirm-btn, .save-btn, .submit-btn {
-    background-color: #4CAF50;
     color: white;
     border: none;
     padding: 10px 20px;
