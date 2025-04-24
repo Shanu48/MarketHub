@@ -104,6 +104,7 @@ header {
     position: fixed;
     width: 100%;
     z-index: 1000;
+    font-size: 26px;
 }
 
 nav {

@@ -11,6 +11,7 @@ header {
     position: fixed;
     width: 100%;
     z-index: 1000;
+    font-size: 24px;
 }
 
 nav {
@@ -54,7 +55,7 @@ nav img:hover{
 }
 
 .nav-links li a.logout {
-    margin-left: 22vw;
+    margin-left: 26vw; /*for aditi its 22vw*/
     margin-right: 2vw;
     background-color: rgb(1, 53, 47);
     border-radius: 3px;
