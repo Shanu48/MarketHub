@@ -166,15 +166,18 @@ def get_return_history():
 
         returns = []
         for row in cursor.fetchall():
-            returns.append({
+            return_data = {
                 "returnID": row['returnID'],
                 "orderID": row['orderID'],
                 "product": f"{row['pName']} (ID: {row['productID']})",
                 "reason": row['reason'],
                 "status": row['status'],
                 "notes": row['notes'],
-                "date": row['date'].strftime('%Y-%m-%d')
-            })
+                "date": row['date'].strftime('%Y-%m-%d'),
+                "supplier_response": row['supplier_response'],
+                "response_date": row['response_date'].strftime('%Y-%m-%d') if row['response_date'] else None
+            }
+            returns.append(return_data)
 
         return jsonify({"success": True, "returns": returns})
 
