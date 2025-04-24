@@ -22,21 +22,40 @@ app.secret_key = "Shanu@04082005"
 # Apply CORS to all routes
 # In app.py - REPLACE your current CORS setup with this:
 # In app.py - Replace your current CORS setup with this:
-CORS(app, resources={
-    r"/*": {
-        "origins": ["http://127.0.0.1:5500", "http://localhost:5500"],
-        "supports_credentials": True,
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"]
-    },
-    r"/order/*": {  # Add specific configuration for order routes
-        "origins": ["http://127.0.0.1:5500", "http://localhost:5500"],
-        "supports_credentials": True,
-        "methods": ["GET", "OPTIONS"],
-        "allow_headers": ["Content-Type"]
-    }
-})
+CORS(app, supports_credentials=True)
 
+@app.route('/orders/place', methods=['OPTIONS', 'POST'])
+def place_order():
+    if request.method == 'OPTIONS':
+        # Pre-flight request
+        response = jsonify()
+        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin'))
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+
+    # Handle POST order submission
+    try:
+        data = request.get_json()
+        payment_method = data.get("paymentMethod")
+        items = data.get("items")
+        total_amount = data.get("totalAmount")
+
+        if not payment_method or not items or not total_amount:
+            return jsonify({"success": False, "error": "Missing required fields"}), 400
+
+        # Simulate storing the order
+        order_id = random.randint(1000, 9999)
+        print(f" Order placed: ID {order_id}, Payment: {payment_method}, Items: {items}, Total: ₹{total_amount}")
+
+        return jsonify({"success": True, "orderID": order_id})
+
+    except Exception as e:
+        print("Error placing order:", e)
+        return jsonify({"success": False, "error": str(e)}), 500
+
+    
 # Add this after CORS setup for debugging
 @app.after_request
 def log_headers(response):

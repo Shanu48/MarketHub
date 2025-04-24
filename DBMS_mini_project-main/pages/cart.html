@@ -245,14 +245,17 @@ async function updateCart(productID, change) {
             
             // Place order
             const orderResponse = await fetch("http://127.0.0.1:5000/orders/place", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    paymentMethod,
-                    items,
-                    totalAmount
-                })
-            });
+    method: "POST",
+    headers: { 
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    },
+    body: JSON.stringify({
+        paymentMethod,
+        items,
+        totalAmount
+    })
+});
             
             const orderData = await orderResponse.json();
             if (orderData.success) {

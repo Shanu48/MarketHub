@@ -1,0 +1,6 @@
+.vscode
+.env
+DBMS_mini_project-main/.vscode
+DBMS_mini_project-main/.env
+DBMS_mini_project-main/markethub_backend/.env
+DBMS_mini_project-main/markethub_backend/venv/.env
