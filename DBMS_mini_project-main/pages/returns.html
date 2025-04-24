@@ -407,6 +407,12 @@
                         <p><strong>Reason:</strong> ${ret.reason}</p>
                         ${ret.notes ? `<p><strong>Notes:</strong> ${ret.notes}</p>` : ''}
                     </div>
+                    ${ret.supplier_response ? `
+<div class="response-section" style="margin-top: 15px; background: #f5f5f5; padding: 10px; border-radius: 4px;">
+    <p><strong>Supplier Response:</strong> ${ret.supplier_response}</p>
+    ${ret.response_date ? `<small>Response Date: ${ret.response_date}</small>` : ''}
+</div>
+` : ''}
                 </div>
                 `;
             });

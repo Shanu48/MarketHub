@@ -8,6 +8,7 @@ from routes.auth_routes import auth_bp
 from routes.auth_routes import profile_bp
 from routes.supplier_routes import supplier_bp
 from routes.returns_routes import returns_blueprint
+from routes.complaints_routes import complaints_bp
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from routes.warehouse_routes import warehouse_bp
@@ -71,6 +72,7 @@ app.register_blueprint(product_blueprint, url_prefix='/')
 app.register_blueprint(supplier_bp) 
 app.register_blueprint(returns_blueprint, url_prefix='/api')
 app.register_blueprint(warehouse_bp, url_prefix='/')
+app.register_blueprint(complaints_bp, url_prefix='/api')
 
 
 # Serve product page
