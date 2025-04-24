@@ -3,8 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Supplier - Manage Complaints</title>
     <link rel="stylesheet" href="supplier.css">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --secondary: #2196F3;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333;
+        }
+        .container {
+            max-width: 70vw;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            margin-top: 15vh;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: rgb(3, 105, 93);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        .complaint-card {
+            border-left: 4px solid var(--warning);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+        }
+        .complaint-card.resolved {
+            border-left-color: var(--primary);
+        }
+        .flex-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status-pending {
+            background-color: var(--warning);
+            color: #000;
+        }
+        .status-approved {
+            background-color: rgb(17, 169, 152);
+            color: white;
+        }
+        .status-rejected {
+            background-color: rgb(255, 169, 48);
+            color: white;
+        }
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            min-height: 100px;
+            margin: 10px 0;
+            resize: vertical;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+            width: 10vw;
+        }
+        .btn-approve {
+            background-color: rgb(15, 172, 154);
+            color: white;
+        }
+        .btn-reject {
+            background-color: rgb(247, 181, 74);
+            color: white;
+        }
+        .response-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error {
+            color: var(--danger);
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -14,10 +120,148 @@
                 <li><a href="s_profile.html">Profile</a></li>
                 <li><a href="manage.html">Order Details</a></li>
                 <li><a href="warehouse.html">Warehouse</a></li>
-                <li><a href="complains.html">Manage Complains</a></li>
+                <li><a href="complains.html">Manage Complaints</a></li>
                 <li><a href="../index.html" class="logout">Logout</a></li>
             </ul>
         </nav>
     </header>
+    <div class="container">
+        <h1><i class="fas fa-exclamation-circle"></i> Manage Product Complaints</h1>
+        
+        <div id="complaintsContainer">
+            <div class="loading">Loading complaints...</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadComplaints);
+        
+        async function loadComplaints() {
+            try {
+                const response = await fetch('http://localhost:5000/api/supplier-complaints', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    renderComplaints(data.complaints);
+                } else {
+                    throw new Error(data.error || 'Failed to load complaints');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('complaintsContainer').innerHTML = `
+                    <div class="error">
+                        Error loading complaints: ${error.message}<br>
+                        <button onclick="loadComplaints()">Retry</button>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderComplaints(complaints) {
+            const container = document.getElementById('complaintsContainer');
+            
+            if (!complaints || complaints.length === 0) {
+                container.innerHTML = '<div class="loading">No pending complaints found.</div>';
+                return;
+            }
+            
+            let html = '';
+            complaints.forEach(complaint => {
+                const statusClass = `status-${complaint.status.toLowerCase()}`;
+                
+                html += `
+                <div class="complaint-card ${complaint.status !== 'Pending' ? 'resolved' : ''}">
+                    <div class="flex-row">
+                        <div>
+                            <strong>Complaint #${complaint.returnID}</strong><br>
+                            <small>Order #${complaint.orderID} • ${complaint.order_date}</small>
+                        </div>
+                        <div>
+                            <span class="status ${statusClass}">${complaint.status}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <p><strong>Customer:</strong> ${complaint.customer_name}</p>
+                        <p><strong>Product:</strong> ${complaint.pName} (ID: ${complaint.productID})</p>
+                        <p><strong>Reason:</strong> ${complaint.reason}</p>
+                        ${complaint.notes ? `<p><strong>Customer Notes:</strong> ${complaint.notes}</p>` : ''}
+                    </div>
+                    
+                    ${complaint.status === 'Pending' ? `
+                    <div id="responseForm-${complaint.returnID}">
+                        <h3>Your Response</h3>
+                        <textarea id="responseText-${complaint.returnID}" 
+                                  placeholder="Enter your response to the customer..."></textarea>
+                        <div>
+                            <button class="btn btn-approve" onclick="submitResponse('${complaint.returnID}', 'approve')">
+                                <i class="fas fa-check"></i> Approve Complaint
+                            </button>
+                            <button class="btn btn-reject" onclick="submitResponse('${complaint.returnID}', 'reject')">
+                                <i class="fas fa-times"></i> Reject Complaint
+                            </button>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="response-section">
+                        <h3>Your Response</h3>
+                        <p>${complaint.supplier_response}</p>
+                        <small>Submitted on: ${complaint.response_date}</small>
+                    </div>
+                    `}
+                </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        async function submitResponse(returnID, action) {
+            try {
+                const responseText = document.getElementById(`responseText-${returnID}`).value;
+                
+                if (!responseText) {
+                    alert('Please enter a response before submitting');
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:5000/api/respond-complaint', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        returnID: returnID,
+                        response: responseText,
+                        action: action
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Response submitted successfully!');
+                    loadComplaints(); // Refresh the list
+                } else {
+                    throw new Error(data.error || 'Failed to submit response');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error submitting response: ${error.message}`);
+            }
+        }
+    </script>
 </body>
 </html>

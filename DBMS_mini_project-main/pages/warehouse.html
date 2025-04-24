@@ -3,8 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>warehouse</title>
+    <title>Warehouse Management</title>
     <link rel="stylesheet" href="supplier.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #34495e;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-top: 15vh;
+            padding: 20px;
+        }
+        
+        .warehouse-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .warehouse-card {
+            color: white;
+            background: #049a98;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .warehouse-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .warehouse-image {
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .warehouse-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .warehouse-card:hover .warehouse-image img {
+            transform: scale(1.05);
+        }
+        
+        .warehouse-info {
+            padding: 20px;
+            color: white;
+        }
+        
+        .warehouse-info h3 {
+            margin-bottom: 10px;
+            color: white;
+            font-size: 1.4rem;
+        }
+        
+        .warehouse-location {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: white;
+        }
+        
+        .warehouse-location i {
+            margin-right: 8px;
+            color: white;
+        }
+        
+        .warehouse-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+        
+        .capacity-bar {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .capacity-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ffe6bd, #faa74f);
+            border-radius: 5px;
+        }
+        
+        .view-details {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background-color: #0f7674;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .view-details:hover {
+            background-color: #0a5352;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            float: right;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .close-btn:hover {
+            color: #139c9a;
+        }
+        
+        .modal-header {
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #0f7674;
+        }
+        
+        .warehouse-detail-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-section {
+            margin-bottom: 25px;
+        }
+        
+        .detail-section h3 {
+            margin-bottom: 15px;
+            color: #139c9a;
+            border-bottom: 2px solid #139c9a;
+            padding-bottom: 5px;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .detail-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .detail-item h4 {
+            margin-bottom: 5px;
+            color: #139c9a;
+        }
+        
+        .suppliers-list, .products-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .supplier-item, .product-item {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .product-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .product-info {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .product-name {
+            font-weight: bold;
+        }
+        
+        .product-quantity {
+            background-color: #f79330;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 768px) {
+            .warehouse-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -14,31 +280,253 @@
                 <li><a href="s_profile.html">Profile</a></li>
                 <li><a href="manage.html">Order Details</a></li>
                 <li><a href="warehouse.html">Warehouse</a></li>
-                <li><a href="complains.html">Manage Complains</a></li>
+                <li><a href="complains.html">Manage Complaints</a></li>
                 <li><a href="../index.html" class="logout">Logout</a></li>
             </ul>
         </nav>
     </header>
+    
+    <div class="container">
+        <div id="warehouse-container" class="warehouse-grid">
+            <!-- Warehouse cards will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Warehouse Detail Modal -->
+    <div id="warehouseModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div class="modal-header">
+                <h2 id="modalWarehouseName"></h2>
+            </div>
+            
+            <img id="modalWarehouseImage" src="" alt="Warehouse Image" class="warehouse-detail-image">
+            
+            <div class="detail-section">
+                <h3>Basic Information</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <h4>Location</h4>
+                        <p id="modalWarehouseLocation"></p>
+                    </div>
+                    <div class="detail-item">
+                        <h4>Capacity</h4>
+                        <p id="modalWarehouseCapacity"></p>
+                    </div>
+                    <div class="detail-item">
+                        <h4>Items Stored</h4>
+                        <p id="modalWarehouseItems"></p>
+                    </div>
+                    <div class="detail-item">
+                        <h4>Capacity Used</h4>
+                        <div class="capacity-bar">
+                            <div id="modalCapacityProgress" class="capacity-progress"></div>
+                        </div>
+                        <p id="modalCapacityPercentage"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Suppliers</h3>
+                <div id="modalSuppliers" class="suppliers-list">
+                    <!-- Suppliers will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="detail-section">
+                <h3>Products in Stock</h3>
+                <div id="modalProducts" class="products-list">
+                    <!-- Products will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', loadWarehouses);
+        
+        // DOM elements
+        const warehouseContainer = document.getElementById('warehouse-container');
+        const warehouseModal = document.getElementById('warehouseModal');
+        const closeBtn = document.querySelector('.close-btn');
+        
+        // Close modal when clicking X or outside
+        closeBtn.addEventListener('click', () => warehouseModal.style.display = 'none');
+        window.addEventListener('click', (e) => {
+            if (e.target === warehouseModal) {
+                warehouseModal.style.display = 'none';
+            }
+        });
 
-    <main>
-        <h2>Warehouse Management</h2>
-        <form id="warehouse-form">
-            <label for="warehouse-name">Warehouse Name:</label>
-            <input type="text" id="warehouse-name" required>
+        // Function to format warehouse image name (similar to customer_home.html)
+        function formatWarehouseImageName(warehouseId) {
+            // Remove any special characters and make lowercase
+            return warehouseId.toLowerCase().replace(/[^a-z0-9]/g, '') + '.png';
+        }
 
-            <label for="capacity">Capacity (in units):</label>
-            <input type="number" id="capacity" min="1" required>
-
-            <label for="stored-items">Stored Items:</label>
-            <textarea id="stored-items" placeholder="Enter product names separated by commas"></textarea>
-
-            <button type="submit">Add Warehouse</button>
-        </form>
-
-        <h3>Warehouse List</h3>
-        <div id="warehouse-list"></div>
-    </main>
-
-    <script></script>
+        // Function to get image path (similar to customer_home.html)
+        function getWarehouseImagePath(warehouse) {
+            // First try the image path returned from the backend
+            if (warehouse.image && warehouse.image.startsWith('http')) {
+                return warehouse.image;
+            }
+            
+            // Fallback to local images
+            const imageName = formatWarehouseImageName(warehouse.warehouseID);
+            return `images/warehouses/${imageName}`;
+        }
+        
+        async function loadWarehouses() {
+            try {
+                console.log("Fetching warehouses...");
+                const response = await fetch('http://localhost:5000/warehouses');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const warehouses = await response.json();
+                console.log("Received warehouses data:", warehouses);
+                renderWarehouses(warehouses);
+            } catch (error) {
+                console.error("Error loading warehouses:", error);
+                warehouseContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error loading warehouses. Please try again later.</p>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderWarehouses(warehouses) {
+            if (!warehouses || warehouses.length === 0) {
+                warehouseContainer.innerHTML = '<p>No warehouses found</p>';
+                return;
+            }
+            
+            warehouseContainer.innerHTML = warehouses.map(warehouse => {
+                // Get the image path using our new function
+                const imagePath = getWarehouseImagePath(warehouse);
+                
+                return `
+                    <div class="warehouse-card">
+                        <div class="warehouse-image">
+                            <img src="${imagePath}" alt="${warehouse.location}" 
+                                 onerror="this.onerror=null; this.src='images/warehouses/default.jpg'">
+                        </div>
+                        <div class="warehouse-info">
+                            <h3>${warehouse.warehouseID}</h3>
+                            <div class="warehouse-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>${warehouse.location}</span>
+                            </div>
+                            
+                            <div class="warehouse-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">${warehouse.supplier_count}</div>
+                                    <div class="stat-label">Suppliers</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${warehouse.product_count}</div>
+                                    <div class="stat-label">Products</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${warehouse.total_items || 0}</div>
+                                    <div class="stat-label">Items</div>
+                                </div>
+                            </div>
+                            
+                            <div class="capacity-bar">
+                                <div class="capacity-progress" style="width: ${warehouse.capacity_percentage}%"></div>
+                            </div>
+                            
+                            <a href="#" class="view-details" onclick="viewWarehouseDetails('${warehouse.warehouseID}')">
+                                View Details <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function viewWarehouseDetails(warehouseId) {
+            try {
+                console.log(`Fetching details for warehouse ${warehouseId}`);
+                const response = await fetch(`http://localhost:5000/warehouse/${warehouseId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const warehouse = await response.json();
+                console.log("Received warehouse details:", warehouse);
+                showWarehouseModal(warehouse);
+            } catch (error) {
+                console.error("Error loading warehouse details:", error);
+                alert(`Error loading warehouse details: ${error.message}`);
+            }
+        }
+        
+        function showWarehouseModal(warehouse) {
+            // Get the image path using our new function
+            const imagePath = getWarehouseImagePath(warehouse);
+            
+            // Set basic info
+            document.getElementById('modalWarehouseName').textContent = warehouse.warehouseID;
+            document.getElementById('modalWarehouseImage').src = imagePath;
+            document.getElementById('modalWarehouseImage').onerror = function() {
+                this.src = 'images/warehouses/default.jpg';
+            };
+            document.getElementById('modalWarehouseLocation').textContent = warehouse.location;
+            document.getElementById('modalWarehouseCapacity').textContent = `${warehouse.capacity} items`;
+            document.getElementById('modalWarehouseItems').textContent = `${warehouse.total_items} items`;
+            
+            // Set capacity info
+            const progress = document.getElementById('modalCapacityProgress');
+            progress.style.width = `${warehouse.capacity_percentage}%`;
+            document.getElementById('modalCapacityPercentage').textContent = 
+                `${warehouse.capacity_percentage}% used (${warehouse.total_items} of ${warehouse.capacity})`;
+            
+            // Set suppliers
+            const suppliersContainer = document.getElementById('modalSuppliers');
+            if (warehouse.suppliers && warehouse.suppliers.length > 0) {
+                suppliersContainer.innerHTML = warehouse.suppliers.map(supplier => `
+                    <div class="supplier-item">
+                        <div>
+                            <strong>${supplier.sName}</strong>
+                            <div>${supplier.email}</div>
+                        </div>
+                        <div>${supplier.phoneNo}</div>
+                    </div>
+                `).join('');
+            } else {
+                suppliersContainer.innerHTML = '<p>No suppliers associated with this warehouse</p>';
+            }
+            
+            // Set products
+            const productsContainer = document.getElementById('modalProducts');
+            if (warehouse.products && warehouse.products.length > 0) {
+                productsContainer.innerHTML = warehouse.products.map(product => `
+                    <div class="product-item">
+                        <div class="product-info">
+                            <span class="product-name">${product.pName}</span>
+                            <span class="product-quantity">${product.quantity} ${product.unit}</span>
+                        </div>
+                        <div>
+                            <small>ID: ${product.productID} | Category: ${product.category || 'N/A'} | Price: $${product.price}</small>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                productsContainer.innerHTML = '<p>No products currently stored in this warehouse</p>';
+            }
+            
+            // Show modal
+            warehouseModal.style.display = 'block';
+        }
+    </script>
 </body>
 </html>

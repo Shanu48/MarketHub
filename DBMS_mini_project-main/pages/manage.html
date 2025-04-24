@@ -8,26 +8,30 @@
     <style>
         .order-container {
             margin: 20px;
+            margin-top: 20vh;
             padding: 20px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 60vw;
+            text-align: center;
+            margin-left: 17vw;
         }
         
         .order-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            color: black;
         }
         
         .order-table th, .order-table td {
             padding: 12px 15px;
-            text-align: left;
             border-bottom: 1px solid #ddd;
         }
         
         .order-table th {
-            background-color: #2c3e50;
+            background-color: #049a98;
             color: white;
         }
         
@@ -39,12 +43,13 @@
         
         .product-table th, .product-table td {
             padding: 8px;
-            border: 1px solid #eee;
+            border: 1px solid #049a98;
             text-align: center;
         }
         
         .product-table th {
-            background-color: #f5f5f5;
+            background-color: #049a98;
+            color: white;
         }
         
         .btn {
@@ -56,7 +61,7 @@
         }
         
         .btn-confirm {
-            background-color: #27ae60;
+            background-color: #ff9e3d;
             color: white;
         }
         
@@ -66,7 +71,7 @@
         }
         
         .status-confirmed {
-            color: #27ae60;
+            color: #049a98;
             font-weight: bold;
         }
         
@@ -80,11 +85,27 @@
             background-color: #d4edda;
             color: #155724;
         }
+        
+        .error {
+            color: #e74c3c;
+        }
     </style>
 </head>
-<body>
+<body style="align-items: center; justify-content: center; align-content: center; justify-items: baseline; text-align: center;">
+    <header>
+        <nav>
+            <a href="supplier_home.html"><img src="images/logo.png" alt="MarketHub"></a>
+            <ul class="nav-links">
+                <li><a href="s_profile.html">Profile</a></li>
+                <li><a href="manage.html">Order Details</a></li>
+                <li><a href="warehouse.html">Warehouse</a></li>
+                <li><a href="complains.html">Manage Complaints</a></li>
+                <li><a href="../index.html" class="logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
     <div class="order-container">
-        <h2>Order Management</h2>
+        <h2 style="color:#025453;">Order Management</h2>
         <div id="orders-list">
             <p>Loading orders...</p>
         </div>
@@ -96,9 +117,12 @@
         async function loadOrders() {
             try {
                 const response = await fetch("http://localhost:5000/supplier_orders");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to load orders");
+                }
                 const orders = await response.json();
                 
-                if (!response.ok) throw new Error(orders.error || "Failed to load orders");
                 if (orders.length === 0) {
                     document.getElementById("orders-list").innerHTML = "<p>No orders found</p>";
                     return;
@@ -121,8 +145,6 @@
                             <th>Order ID</th>
                             <th>Customer</th>
                             <th>Date</th>
-                            <th>Status</th>
-                            <th>Products</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -134,9 +156,6 @@
                         <td>${order.customerName}</td>
                         <td>${new Date(order.orderDate).toLocaleDateString()}</td>
                         <td>
-                            <span class="order-status ${order.isFullyConfirmed ? 'order-confirmed' : ''}">
-                                ${order.isFullyConfirmed ? 'Confirmed' : 'Pending'}
-                            </span>
                         </td>
                         <td>
                             <table class="product-table">
@@ -171,10 +190,6 @@
         }
 
         async function confirmProduct(orderId, productId) {
-            if (!confirm("Confirm this product for shipping?")) {
-                return;
-            }
-
             try {
                 const response = await fetch("http://localhost:5000/confirm_product", {
                     method: "POST",
@@ -186,16 +201,17 @@
                         productID: productId
                     })
                 });
-
-                const result = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error(result.error || "Confirmation failed");
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to confirm product");
                 }
-
-                alert("Product confirmed successfully!");
-                loadOrders(); // Refresh the order list
+                
+                const result = await response.json();
+                alert(result.message);
+                loadOrders(); // Refresh the orders list
             } catch (error) {
-                console.error("Confirmation error:", error);
+                console.error("Error:", error);
                 alert(`Error: ${error.message}`);
             }
         }
