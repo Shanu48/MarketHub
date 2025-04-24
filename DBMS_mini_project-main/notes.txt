@@ -1,0 +1,23 @@
+STUFF THATS NEEDS FIXING
+
+CUSTOMER
+2.fix the product zoom-in while adding--ADITI
+3.cart-initial checkout pop-up-remove--ADITI
+4.cart-product image-fix--ADITI
+6.checkout pop-up align+design--ADITI
+7.orders-style--ADITI 
+
+{8.tracking not working--SHRAVANI-DONEEE
+9.returns too--SHRAVANI-DONEEE
+5.+/- in cart-fix--SHRAVANI-DONEEE
+1.home-styling--ADITI-DONEEE}
+
+
+SUPPLIER
+1.sup home-style again--ADITI
+3.update tables in Aditi's laptop--SHRAVANI
+4.display warhouse (name,location,image)--SHRAVANI, later styling--ADITI
+5.if stock=0, dont display
+6.manage complaints--SHRAVANI
+
+{2.book transport in order management--SHRAVANI}

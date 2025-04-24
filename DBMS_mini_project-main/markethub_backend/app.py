@@ -10,6 +10,7 @@ from routes.supplier_routes import supplier_bp
 from routes.returns_routes import returns_blueprint
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from routes.warehouse_routes import warehouse_bp
 
 from flask import send_from_directory
 
@@ -24,7 +25,7 @@ app.secret_key = "Shanu@04082005"
 # In app.py - Replace your current CORS setup with this:
 CORS(app, resources={
     r"/*": {
-        "origins": ["http://127.0.0.1:5500", "http://localhost:5500"],
+        "origins": ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:5501", "http://localhost:5501"],
         "supports_credentials": True,
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"]
@@ -34,6 +35,22 @@ CORS(app, resources={
         "supports_credentials": True,
         "methods": ["GET", "OPTIONS"],
         "allow_headers": ["Content-Type"]
+    },
+    r"/supplier_orders": {
+        "origins": ["http://127.0.0.1:5501", "http://localhost:5501"],
+        "supports_credentials": True
+    },
+    r"/confirm_product": {
+        "origins": ["http://127.0.0.1:5501", "http://localhost:5501"],
+        "supports_credentials": True
+    },
+    r"/arrange_transport": {
+        "origins": ["http://127.0.0.1:5501", "http://localhost:5501"],
+        "supports_credentials": True
+    },
+    r"/get_transport_details/*": {
+        "origins": ["http://127.0.0.1:5501", "http://localhost:5501"],
+        "supports_credentials": True
     }
 })
 
@@ -53,6 +70,7 @@ app.register_blueprint(profile_bp)
 app.register_blueprint(product_blueprint, url_prefix='/')
 app.register_blueprint(supplier_bp) 
 app.register_blueprint(returns_blueprint, url_prefix='/api')
+app.register_blueprint(warehouse_bp, url_prefix='/')
 
 
 # Serve product page
