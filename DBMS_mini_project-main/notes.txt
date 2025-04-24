@@ -1,16 +1,16 @@
 STUFF THATS NEEDS FIXING
 
-CUSTOMER
-2.fix the product zoom-in while adding--ADITI
-3.cart-initial checkout pop-up-remove--ADITI
-4.cart-product image-fix--ADITI
-6.checkout pop-up align+design--ADITI
-7.orders-style--ADITI 
+CUSTOMER-ALL DONE!!!
 
 {8.tracking not working--SHRAVANI-DONEEE
 9.returns too--SHRAVANI-DONEEE
 5.+/- in cart-fix--SHRAVANI-DONEEE
-1.home-styling--ADITI-DONEEE}
+1.home-styling--ADITI-DONEEE
+2.fix the product zoom-in while adding--ADITI
+3.cart-initial checkout pop-up-remove--ADITI
+4.cart-product image-fix--ADITI
+6.checkout pop-up align+design--ADITI
+7.orders-style--ADITI }
 
 
 SUPPLIER

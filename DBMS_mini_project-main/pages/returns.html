@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MarketHub - Returns Center</title>
+    <link rel="stylesheet" href="customer.css">
     <style>
         :root {
             --primary: #4CAF50;
@@ -13,23 +14,18 @@
             --light-gray: #f5f5f5;
             --dark-gray: #333;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-        }
         .container {
-            max-width: 1200px;
+            max-width: 50vw;
             margin: 0 auto;
             background: white;
             padding: 25px;
             border-radius: 10px;
+            margin-top: 20vh;
             box-shadow: 0 2px 15px rgba(0,0,0,0.1);
         }
         h1 {
-            color: var(--dark-gray);
+            text-align: center;
+            color: rgb(3, 101, 90);
             border-bottom: 2px solid #eee;
             padding-bottom: 10px;
             margin-bottom: 25px;
@@ -66,7 +62,7 @@
             resize: vertical;
         }
         button {
-            background-color: var(--primary);
+            background-color: rgb(5, 153, 136);
             color: white;
             border: none;
             padding: 12px 25px;
@@ -77,10 +73,10 @@
             transition: background 0.3s;
         }
         button:hover {
-            background-color: #3e8e41;
+            background-color: rgb(3, 105, 93);
         }
         button.secondary {
-            background-color: var(--secondary);
+            background-color: rgb(0, 156, 138);
         }
         button.danger {
             background-color: var(--danger);
@@ -105,11 +101,11 @@
             font-weight: 600;
         }
         .status-pending {
-            background-color: var(--warning);
-            color: #000;
+            color: rgb(255, 153, 0);
+            border: 1px rgb(255, 180, 67) solid;
         }
         .status-approved {
-            background-color: var(--primary);
+            background-color: rgb(3, 105, 93);
             color: white;
         }
         .status-rejected {
@@ -146,22 +142,24 @@
             align-items: center;
             margin-bottom: 15px;
         }
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            .section {
-                padding: 15px;
-            }
-        }
     </style>
 </head>
 <body>
+    <header>
+        <nav>
+          <a href="customer_home.html"><img src="images/logo.png" alt="MarketHub"></a>
+          <ul class="nav-links">
+            <li><a href="profile.html">Profile</a></li>
+            <li><a href="cart.html">Cart</a></li>
+            <li><a href="order_details.html">Orders</a></li>
+            <li><a href="returns.html">Returns</a></li>
+            <li><a href="../index.html" class="logout">Logout</a></li>
+          </ul>
+        </nav>
+    </header>
     <div class="container">
-        <h1>Returns Center</h1>
-        
+        <h1>New Return Request</h1>
         <div class="section">
-            <h2>New Return Request</h2>
             <div id="formMessage"></div>
             <form id="returnForm">
                 <div class="form-group">
@@ -203,7 +201,6 @@
         <div class="section">
             <div class="flex-row">
                 <h2>Your Return History</h2>
-                <button onclick="refreshHistory()" class="secondary">Refresh</button>
             </div>
             <div id="historyContainer">
                 <div class="loading">Loading your return history...</div>
