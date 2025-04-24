@@ -434,9 +434,14 @@ nav img:hover{
     border-radius: 10px;
     max-width: 370px;
     width: 90%;
-    height: 50vh;
+    height: 60vh;
     animation: zoomIn 0.3s ease;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-content img{
+    width: 15vw;
+    margin-left: 5vw;
   }
 
   .submit-btn{
