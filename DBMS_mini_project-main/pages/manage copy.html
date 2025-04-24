@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Supplier</title>
+    <link rel="stylesheet" href="supplier.css">
+    <style>
+        /* Previous styles remain the same */
+        
+        .btn-arrange {
+            background-color: #3498db;
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .transport-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .transport-status {
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            color: #e67e22;
+        }
+        
+        .status-in-transit {
+            color: #3498db;
+        }
+        
+        .status-delivered {
+            color: #27ae60;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .modal-footer {
+            margin-top: 20px;
+            text-align: right;
+        }
+        
+        .btn-submit {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="order-container">
+        <h2>Order Management</h2>
+        <div id="orders-list">
+            <p>Loading orders...</p>
+        </div>
+    </div>
+
+    <!-- Transport Modal -->
+    <div id="transportModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Arrange Transport</h3>
+            <form id="transportForm">
+                <input type="hidden" id="modalOrderID">
+                <div class="form-group">
+                    <label for="vehicleNo">Vehicle Number:</label>
+                    <input type="text" id="vehicleNo" required>
+                </div>
+                <div class="form-group">
+                    <label for="driverName">Driver Name:</label>
+                    <input type="text" id="driverName" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-submit">Arrange Transport</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadOrders);
+
+        // Modal handling
+        const modal = document.getElementById("transportModal");
+        const span = document.getElementsByClassName("close")[0];
+        const transportForm = document.getElementById("transportForm");
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        transportForm.onsubmit = async function(e) {
+            e.preventDefault();
+            const orderID = document.getElementById("modalOrderID").value;
+            const vehicleNo = document.getElementById("vehicleNo").value;
+            const driverName = document.getElementById("driverName").value;
+            
+            try {
+                const response = await fetch("http://localhost:5000/arrange_transport", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        orderID: orderID,
+                        vehicleNo: vehicleNo,
+                        driverName: driverName
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to arrange transport");
+                }
+                
+                const result = await response.json();
+                alert(result.message);
+                modal.style.display = "none";
+                loadOrders(); // Refresh the orders list
+            } catch (error) {
+                console.error("Error:", error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
+        function openTransportModal(orderID) {
+            document.getElementById("modalOrderID").value = orderID;
+            modal.style.display = "block";
+        }
+
+        async function loadOrders() {
+            try {
+                const response = await fetch("http://localhost:5000/supplier_orders");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to load orders");
+                }
+                const orders = await response.json();
+                
+                if (orders.length === 0) {
+                    document.getElementById("orders-list").innerHTML = "<p>No orders found</p>";
+                    return;
+                }
+
+                await renderOrders(orders);
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("orders-list").innerHTML = 
+                    `<p class="error">Error loading orders: ${error.message}</p>`;
+            }
+        }
+
+        async function renderOrders(orders) {
+            const container = document.getElementById("orders-list");
+            let html = `
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Products</th>
+                            <th>Transport</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            for (const order of orders) {
+                // Get transport details for this order
+                let transportDetails = null;
+                try {
+                    const transportResponse = await fetch(`http://localhost:5000/get_transport_details/${order.orderID}`);
+                    if (transportResponse.ok) {
+                        transportDetails = await transportResponse.json();
+                    }
+                } catch (error) {
+                    console.error("Error fetching transport details:", error);
+                }
+
+                html += `
+                    <tr>
+                        <td>${order.orderID}</td>
+                        <td>${order.customerName}</td>
+                        <td>${new Date(order.orderDate).toLocaleDateString()}</td>
+                        <td>
+                            <span class="order-status ${order.isFullyConfirmed ? 'order-confirmed' : ''}">
+                                ${order.isFullyConfirmed ? 'Confirmed' : 'Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <table class="product-table">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Qty</th>
+                                    <th>Status</th>
+                                </tr>`;
+                
+                order.products.forEach(product => {
+                    html += `
+                        <tr>
+                            <td>${product.name}</td>
+                            <td>${product.quantity}</td>
+                            <td>
+                                ${product.confirmed 
+                                    ? '<span class="status-confirmed">Confirmed</span>'
+                                    : `<button class="btn btn-confirm" 
+                                        onclick="confirmProduct('${order.orderID}', '${product.id}')">
+                                        Confirm
+                                    </button>`}
+                            </td>
+                        </tr>`;
+                });
+                
+                html += `</table></td>
+                        <td>`;
+                
+                if (transportDetails) {
+                    let statusClass = "status-pending";
+                    if (transportDetails.status === "In Transit") {
+                        statusClass = "status-in-transit";
+                    } else if (transportDetails.status === "Delivered") {
+                        statusClass = "status-delivered";
+                    }
+                    
+                    html += `
+                        <div class="transport-info">
+                            <div><strong>Transport ID:</strong> ${transportDetails.transportID}</div>
+                            <div><strong>Vehicle:</strong> ${transportDetails.vehicleNo}</div>
+                            <div><strong>Driver:</strong> ${transportDetails.driverName}</div>
+                            <div class="transport-status ${statusClass}">
+                                ${transportDetails.status}
+                            </div>
+                        </div>`;
+                } else if (order.isFullyConfirmed) {
+                    html += `
+                        <button class="btn btn-arrange" 
+                            onclick="openTransportModal('${order.orderID}')">
+                            Arrange Transport
+                        </button>`;
+                } else {
+                    html += `<span>Confirm all products first</span>`;
+                }
+                
+                html += `</td>
+                    </tr>`;
+            }
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        async function confirmProduct(orderId, productId) {
+            try {
+                const response = await fetch("http://localhost:5000/confirm_product", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        orderID: orderId,
+                        productID: productId
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to confirm product");
+                }
+                
+                const result = await response.json();
+                alert(result.message);
+                loadOrders(); // Refresh the orders list
+            } catch (error) {
+                console.error("Error:", error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

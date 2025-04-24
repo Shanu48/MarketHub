@@ -80,6 +80,10 @@
             background-color: #d4edda;
             color: #155724;
         }
+        
+        .error {
+            color: #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -96,9 +100,12 @@
         async function loadOrders() {
             try {
                 const response = await fetch("http://localhost:5000/supplier_orders");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to load orders");
+                }
                 const orders = await response.json();
                 
-                if (!response.ok) throw new Error(orders.error || "Failed to load orders");
                 if (orders.length === 0) {
                     document.getElementById("orders-list").innerHTML = "<p>No orders found</p>";
                     return;
@@ -171,10 +178,6 @@
         }
 
         async function confirmProduct(orderId, productId) {
-            if (!confirm("Confirm this product for shipping?")) {
-                return;
-            }
-
             try {
                 const response = await fetch("http://localhost:5000/confirm_product", {
                     method: "POST",
@@ -186,16 +189,17 @@
                         productID: productId
                     })
                 });
-
-                const result = await response.json();
+                
                 if (!response.ok) {
-                    throw new Error(result.error || "Confirmation failed");
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to confirm product");
                 }
-
-                alert("Product confirmed successfully!");
-                loadOrders(); // Refresh the order list
+                
+                const result = await response.json();
+                alert(result.message);
+                loadOrders(); // Refresh the orders list
             } catch (error) {
-                console.error("Confirmation error:", error);
+                console.error("Error:", error);
                 alert(`Error: ${error.message}`);
             }
         }

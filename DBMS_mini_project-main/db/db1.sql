@@ -147,6 +147,17 @@ CREATE TABLE Cart (
     FOREIGN KEY (userID) REFERENCES customer(userID)
 );
 
+CREATE TABLE Shipment (
+    shipmentID VARCHAR(10) PRIMARY KEY,
+    transportID VARCHAR(10),
+    orderID VARCHAR(10),
+    status ENUM('Pending', 'In Transit', 'Delivered') NOT NULL,
+    startTime DATETIME NOT NULL,
+    estimatedDelivery DATETIME NOT NULL,
+    FOREIGN KEY (transportID) REFERENCES Transport(transportID),
+    FOREIGN KEY (orderID) REFERENCES Orders(orderID)
+);
+
 -- Sample Data for User Table
 INSERT INTO User (userID, password) VALUES
 ('S001', 'pass@123'),
