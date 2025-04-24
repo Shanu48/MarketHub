@@ -137,37 +137,51 @@
     }
 
     // Function to update cart quantity
-    async function updateCart(productID, change) {
-        const quantityControls = document.querySelectorAll(`.quantity-controls[data-product-id="${productID}"]`);
-        if (!quantityControls.length) return;
+    <!-- In cart.html, replace the updateCart function with this: -->
+async function updateCart(productID, change) {
+    try {
+        // First get the current quantity from the server
+        const response = await fetch("http://127.0.0.1:5000/cart/items");
+        const data = await response.json();
         
-        const quantitySpan = quantityControls[0].querySelector('.qty-value');
-        let newQuantity = parseInt(quantitySpan.textContent) + change;
+        if (!data.success) {
+            alert("Failed to get current cart items");
+            return;
+        }
+        
+        // Find the current quantity for this product
+        const currentItem = data.items.find(item => item.productID === productID);
+        if (!currentItem) {
+            alert("Item not found in cart");
+            return;
+        }
+        
+        let newQuantity = currentItem.quantity + change;
         
         if (newQuantity <= 0) {
             removeFromCart(productID);
             return;
         }
         
-        try {
-            const response = await fetch("http://127.0.0.1:5000/cart/update", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ productID, quantity: newQuantity })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                quantitySpan.textContent = newQuantity;
-                loadCartItems(); // Refresh totals
-            } else {
-                alert(data.error || 'Failed to update cart');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to update cart');
+        // Update the quantity on server
+        const updateResponse = await fetch("http://127.0.0.1:5000/cart/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productID, quantity: newQuantity })
+        });
+        
+        const updateData = await updateResponse.json();
+        if (updateData.success) {
+            // Reload the entire cart to ensure consistency
+            loadCartItems();
+        } else {
+            alert(updateData.error || 'Failed to update cart');
         }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to update cart');
     }
+}
 
     // Function to remove item from cart
     async function removeFromCart(productID) {
