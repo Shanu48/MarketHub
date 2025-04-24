@@ -150,10 +150,16 @@
     `;
 
     row.querySelector(".product-card").addEventListener("click", (e) => {
-      if (!e.target.classList.contains("add-cart-btn")) {
-        showProductModal(product);
-      }
-    });
+  if (
+    e.target.classList.contains("add-cart-btn") ||
+    e.target.classList.contains("qty-btn") ||
+    e.target.closest(".quantity-controls")
+  ) {
+    e.stopPropagation(); // prevent triggering modal
+    return;
+  }
+  showProductModal(product);
+});
 
     container.appendChild(row);
   });
