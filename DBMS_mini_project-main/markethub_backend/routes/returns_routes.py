@@ -14,14 +14,6 @@ from db import get_db_connection
 
 from flask import make_response
 
-@returns_blueprint.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'http://127.0.0.1:5501')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
-
 def get_logged_in_user():
     try:
         current_dir = Path(__file__).parent
@@ -38,11 +30,18 @@ def get_logged_in_user():
         logger.error(f"Error getting logged in user: {str(e)}")
         return None
 
-@returns_blueprint.route("/order-options", methods=["GET"])
+# Remove ALL manual CORS headers from returns_routes.py
+# Keep only the route handlers and ensure consistent error responses
+
+# Example for one route - apply similar to all:
+@returns_blueprint.route("/order-options", methods=["GET", "OPTIONS"])
 def get_order_options():
     conn = None
     cursor = None
     try:
+        if request.method == "OPTIONS":
+            return jsonify({"status": "preflight"}), 200
+            
         user_id = get_logged_in_user()
         if not user_id:
             return jsonify({"success": False, "error": "User not logged in"}), 401
@@ -62,13 +61,13 @@ def get_order_options():
         orders = cursor.fetchall()
         return jsonify({"success": True, "orders": orders})
 
-    except mysql.connector.Error as err:
-        return jsonify({"success": False, "error": f"Database error: {err}"}), 500
+    except Exception as e:
+        print(f"Error in get_order_options: {str(e)}")  # Debugging
+        return jsonify({"success": False, "error": str(e)}), 500
     finally:
         if conn and conn.is_connected():
             cursor.close()
             conn.close()
-
 @returns_blueprint.route("/product-options/<order_id>", methods=["GET"])
 def get_product_options(order_id):
     conn = None

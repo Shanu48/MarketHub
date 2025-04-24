@@ -20,12 +20,32 @@ app.secret_key = "Shanu@04082005"
 
 # Enable CORS
 # Apply CORS to all routes
+# In app.py - REPLACE your current CORS setup with this:
+# In app.py - Replace your current CORS setup with this:
 CORS(app, resources={
     r"/*": {
-        "origins": ["http://127.0.0.1:5500", "http://localhost:5500", "http://127.0.0.1:5501"],
-        "supports_credentials": True
+        "origins": ["http://127.0.0.1:5500", "http://localhost:5500"],
+        "supports_credentials": True,
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    },
+    r"/order/*": {  # Add specific configuration for order routes
+        "origins": ["http://127.0.0.1:5500", "http://localhost:5500"],
+        "supports_credentials": True,
+        "methods": ["GET", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
     }
 })
+
+# Add this after CORS setup for debugging
+@app.after_request
+def log_headers(response):
+    """Debugging endpoint to log all response headers"""
+    print("\nResponse Headers:")
+    for name, value in response.headers.items():
+        print(f"{name}: {value}")
+    print()
+    return response
 
 # Register Blueprints
 app.register_blueprint(auth_bp)

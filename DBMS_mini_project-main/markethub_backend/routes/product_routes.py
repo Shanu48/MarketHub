@@ -417,21 +417,10 @@ def get_order_history():
 
 @product_blueprint.route("/order/track/<order_id>", methods=["GET", "OPTIONS"])
 def track_order(order_id):
-    if request.method == "OPTIONS":
-        # Handle preflight request
-        response = jsonify({"success": True})
-        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
-        response.headers.add("Access-Control-Allow-Credentials", "true")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type")
-        return response
-    
     try:
         user_id = get_logged_in_user()
         if not user_id:
-            response = jsonify({"success": False, "error": "User not logged in"})
-            response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
-            response.headers.add("Access-Control-Allow-Credentials", "true")
-            return response, 401
+            return jsonify({"success": False, "error": "User not logged in"}), 401
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -442,10 +431,7 @@ def track_order(order_id):
             WHERE orderID = %s AND userID = %s
         """, (order_id, user_id))
         if not cursor.fetchone():
-            response = jsonify({"success": False, "error": "Order not found"})
-            response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
-            response.headers.add("Access-Control-Allow-Credentials", "true")
-            return response, 404
+            return jsonify({"success": False, "error": "Order not found"}), 404
 
         # Get order status
         cursor.execute("""
@@ -460,12 +446,9 @@ def track_order(order_id):
         status = cursor.fetchone()
 
         if not status:
-            response = jsonify({"success": False, "error": "Status not available"})
-            response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
-            response.headers.add("Access-Control-Allow-Credentials", "true")
-            return response, 404
+            return jsonify({"success": False, "error": "Status not available"}), 404
 
-        response = jsonify({
+        return jsonify({
             "success": True,
             "order_id": order_id,
             "status": {
@@ -474,15 +457,9 @@ def track_order(order_id):
                 "returns": status['return_status'] or "None"
             }
         })
-        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
-        response.headers.add("Access-Control-Allow-Credentials", "true")
-        return response
 
     except mysql.connector.Error as err:
-        response = jsonify({"success": False, "error": f"Database error: {err}"})
-        response.headers.add("Access-Control-Allow-Origin", "http://127.0.0.1:5501")
-        response.headers.add("Access-Control-Allow-Credentials", "true")
-        return response, 500
+        return jsonify({"success": False, "error": f"Database error: {err}"}), 500
     finally:
         if conn.is_connected():
             cursor.close()
