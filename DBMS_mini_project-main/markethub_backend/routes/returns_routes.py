@@ -153,13 +153,14 @@ def get_return_history():
         cursor = conn.cursor(dictionary=True)
 
         query = """
-            SELECT r.returnID, r.orderID, r.reason, r.status, r.notes,
-                   p.pName, p.productID, o.date
-            FROM Returns r
-            JOIN Product p ON r.productID = p.productID
-            JOIN Orders o ON r.orderID = o.orderID
-            WHERE o.userID = %s
-            ORDER BY o.date DESC
+        SELECT r.returnID, r.orderID, r.reason, r.status, r.notes,
+            r.supplier_response, r.response_date,
+            p.pName, p.productID, o.date
+        FROM Returns r
+        JOIN Product p ON r.productID = p.productID
+        JOIN Orders o ON r.orderID = o.orderID
+        WHERE o.userID = %s
+        ORDER BY o.date DESC
         """
         cursor.execute(query, (user_id,))
 

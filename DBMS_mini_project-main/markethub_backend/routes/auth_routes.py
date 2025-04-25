@@ -87,7 +87,7 @@ def login():
         user_id = supplier_result[0]
         role = 'S'
     else:
-        # Check Customer table
+        # Check Customer tables
         cursor.execute("""
             SELECT User.userID FROM Customer
             JOIN User ON Customer.userID = User.userID
